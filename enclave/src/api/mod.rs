@@ -1,3 +1,4 @@
+use alloy::primitives::Keccak256;
 use automata_sgx_sdk::dcap::dcap_quote;
 
 pub mod output;
@@ -46,9 +47,16 @@ impl MyApiServer for MyRpc {
                 number: number,
                 winner_address: user_address,
             };
+
             let winning_message_vec = winning_message.to_vec();
-            let signature = current_state.sign(winning_message_vec.as_slice());
+
+            let mut hasher = Keccak256::new();
+            hasher.update(&winning_message_vec);
+            let digest = hasher.finalize();
+
+            let signature = current_state.sign(digest);
             current_state.new_round();
+            
             Ok(GuessResponse::Correct(WinningOutput {
                 message_bytes: winning_message_vec,
                 signature: signature.to_vec(),

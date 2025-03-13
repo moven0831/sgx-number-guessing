@@ -8,6 +8,7 @@ lazy_static! {
 
 use alloy::signers::local::PrivateKeySigner;
 use alloy::signers::SignerSync;
+use alloy::primitives::FixedBytes;
 use rand::Rng;
 
 #[derive(Debug)]
@@ -52,8 +53,8 @@ impl State {
         self.round
     }
 
-    pub fn sign(&self, message: &[u8]) -> [u8; 65] {
-        self.key_signer.sign_message_sync(message)
+    pub fn sign(&self, digest: FixedBytes<32>) -> [u8; 65] {
+        self.key_signer.sign_hash_sync(&digest)
             .expect("Signing failed")
             .as_bytes()
     }
