@@ -9,7 +9,7 @@ use jsonrpsee::server::ServerBuilder;
 
 
 pub async fn entrypoint() {
-    let addr = format!("127.0.0.1:{}", 8080);
+    let addr = format!("0.0.0.0:{}", 8080);
 
     // Create the server
     let server = ServerBuilder::new()
