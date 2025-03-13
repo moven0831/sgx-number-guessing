@@ -35,6 +35,10 @@ pub async fn entrypoint() {
  */
 #[no_mangle]
 pub unsafe extern "C" fn run_tee_server() -> SgxStatus {
+    tracing_subscriber::fmt()
+        .with_env_filter(tracing_subscriber::EnvFilter::from_default_env())
+        .init();
+    
     println!("=============== Trusted execution =================");
 
     let rt = tokio::runtime::Runtime::new().unwrap();
