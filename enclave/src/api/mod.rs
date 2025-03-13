@@ -48,14 +48,20 @@ impl MyApiServer for MyRpc {
                 winner_address: user_address,
             };
 
+            tracing::info!("Winning message: {:?}", winning_message);
+
             let winning_message_vec = winning_message.to_vec();
 
             let mut hasher = Keccak256::new();
             hasher.update(&winning_message_vec);
             let digest = hasher.finalize();
 
+            tracing::info!("digest: {}", digest);
+
             let signature = current_state.sign(digest);
             current_state.new_round();
+
+            tracing::info!("signautre: {:?}", signature);
             
             Ok(GuessResponse::Correct(WinningOutput {
                 message_bytes: winning_message_vec,
