@@ -12,7 +12,7 @@
   <HeapMaxSize>0x100000</HeapMaxSize>
   <!-- The number of TCS. Must be greater than 0 -->
   <!-- TCS: Thread Control Structure -->
-  <TCSNum>2</TCSNum>
+  <TCSNum>4</TCSNum>
   <!-- TCS management policy -->
   <!-- 0: TCS is bound to the untrusted thread -->
   <!-- 1: TCS is not bound to the untrusted thread -->
