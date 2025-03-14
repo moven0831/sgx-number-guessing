@@ -2,6 +2,7 @@ use automata_sgx_sdk::types::SgxStatus;
 
 pub mod api;
 pub mod state;
+pub mod contract;
 
 use crate::api::types::MyApiServer;
 use crate::api::MyRpc;

@@ -8,6 +8,7 @@ use output::*;
 use types::MyApiServer;
 
 use super::state::STATE;
+use super::contract::get_nonce;
 use async_trait::async_trait;
 use jsonrpsee::core::RpcResult;
 
@@ -39,6 +40,9 @@ impl MyApiServer for MyRpc {
     }
 
     async fn guess_number(&self, user_address: String, number: u64) -> RpcResult<GuessResponse> {
+        let nonce = get_nonce().await;
+        tracing::info!("Nonce: {}", nonce);
+        
         let mut current_state = STATE.lock().unwrap();
         let guessed = current_state.guess_number(number);
         if guessed {
@@ -50,7 +54,7 @@ impl MyApiServer for MyRpc {
 
             tracing::info!("Winning message: {:?}", winning_message);
 
-            let winning_message_vec = winning_message.to_vec();
+            let winning_message_vec = winning_message.to_vec(nonce);
 
             let mut hasher = Keccak256::new();
             hasher.update(&winning_message_vec);

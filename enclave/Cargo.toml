@@ -18,7 +18,7 @@ serde_json = { workspace = true }
 jsonrpsee = { workspace = true, features = ["server", "macros"] }
 async-trait = { workspace = true }
 tokio = { workspace = true , features = ["macros", "net", "rt-multi-thread"] }
-alloy = { workspace = true }
+alloy = { workspace = true, features = ["contract"] }
 rand = { workspace = true }
 lazy_static = { workspace = true }
 tracing = { workspace = true }
