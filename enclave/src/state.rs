@@ -6,8 +6,7 @@ lazy_static! {
     pub static ref STATE: Mutex<State> = Mutex::new(State::new());
 }
 
-use alloy::signers::local::PrivateKeySigner;
-use alloy::signers::SignerSync;
+use base::eth::Keypair;
 use alloy::primitives::FixedBytes;
 use rand::Rng;
 
@@ -15,7 +14,7 @@ use rand::Rng;
 pub struct State {
     round: u64,
     current_round_number: u64,
-    key_signer: PrivateKeySigner,
+    keypair: Keypair,
 }
 
 impl State {
@@ -23,13 +22,12 @@ impl State {
         State {
             round: 1,
             current_round_number: Self::generate_round_number(),
-            key_signer: PrivateKeySigner::random()
+            keypair: Keypair::new()
         }
     }
 
     pub fn rotate_key(&mut self) {
-        let new_signer = PrivateKeySigner::random();
-        self.key_signer = new_signer;
+        self.keypair = Keypair::new();
     }
 
     pub fn guess_number(&mut self, number: u64) -> bool {
@@ -46,7 +44,7 @@ impl State {
     }
 
     pub fn get_signer_address(&self) -> Address {
-        self.key_signer.address()
+        self.keypair.address()
     }
 
     pub fn get_current_round(&self) -> u64 {
@@ -54,9 +52,10 @@ impl State {
     }
 
     pub fn sign(&self, digest: FixedBytes<32>) -> [u8; 65] {
-        self.key_signer.sign_hash_sync(&digest)
-            .expect("Signing failed")
-            .as_bytes()
+        let sk_binding = self.keypair.secret_key();
+        let sk = sk_binding.as_ref();
+        let digest_slice: [u8; 32] = digest.into();
+        Keypair::sign_digest_ecdsa(sk, digest_slice)
     }
 
     fn generate_round_number() -> u64 {
