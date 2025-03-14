@@ -8,6 +8,7 @@ import {MockDcapAttestation} from "./mock/MockDcapAttestation.sol";
 
 contract GuessTest is Test {
     address admin = address(0x69);
+    address user = address(0x01);
 
     Guess guess;
     DcapPortal portal;
@@ -15,7 +16,7 @@ contract GuessTest is Test {
 
     bytes32 mrenclave = vm.envBytes32("MR_ENCLAVE");
     bytes32 mrsigner = vm.envBytes32("MR_SIGNER");
-    address signer = 0xf05DC498ba7E64c6a5A27A9A00b549E521f7388D;
+    address signer = 0xa6F7B9b4ce833CA93e5375BC61fAC00cB141B85F;
 
     function setUp() public {
         vm.startPrank(admin);
@@ -25,10 +26,12 @@ contract GuessTest is Test {
         portal.initialize(admin, address(attestation));
         guess = new Guess(address(portal), mrsigner, mrenclave);
 
+        vm.deal(address(guess), 100 ether);
+
         vm.stopPrank();
     }
 
-    function test_attestSigner() public {
+    function test_attest_signer() public {
         string memory quotePath = string.concat(
             vm.projectRoot(),
             "/test/sample/quote.bin"
@@ -48,5 +51,35 @@ contract GuessTest is Test {
         // check signer
         address signerFound = guess.signer();
         assertEq(signerFound, signer);
-    }    
+    }
+
+    function test_claim_rewards() public {
+        // skip attestation
+        vm.store(
+            address(guess), 
+            bytes32(uint256(10)), 
+            bytes32(uint256(uint160(signer)))
+        );
+
+        uint256 userBalanceBefore = user.balance;
+        uint256 guessBalanceBefore = address(guess).balance;
+
+        string memory signaturePath = string.concat(
+            vm.projectRoot(),
+            "/test/sample/signature.bin"
+        );
+
+        uint64 round = 1;
+        uint64 winningNumber = 2;
+        bytes memory signature = vm.readFileBinary(signaturePath);
+
+        vm.prank(user);
+        guess.claimReward(round, winningNumber, signature);
+
+        uint256 userBalanceAfter = user.balance;
+        uint256 guessBalanceAfter = address(guess).balance;
+
+        assertEq(userBalanceAfter, userBalanceBefore + 1 ether);
+        assertEq(guessBalanceAfter, guessBalanceBefore - 1 ether);
+    }   
 }

@@ -3,11 +3,15 @@ pragma solidity ^0.8.13;
 
 import { DcapLibCallback } from "@dcap-portal/src/lib/DcapLibCallback.sol";
 import { Output } from "@dcap-portal/src/lib/Output.sol";
+import { ECDSA } from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 
 contract Guess is DcapLibCallback {
 
+    using ECDSA for bytes32;
+
     bytes4 constant SGX_TEE = 0x00000000;
     uint256 constant ISV_ENCLAVE_REPORT_LENGTH = 384;
+    uint256 constant REWARD = 1 ether;
 
     // enclave configuration
     address public signer;
@@ -24,12 +28,21 @@ contract Guess is DcapLibCallback {
     error MRENCLAVE_Mismatch();
     // d5527477
     error MRSIGNER_Mismatch();
+    // 44fc0270
+    error Low_Balance();
+    // 0b3d77a5
+    error Transfer_Failed(address recipient);
 
     constructor (address _dcapPortal, bytes32 _mrsigner, bytes32 _mrEnclave) {
         __DcapLibCallbackInit(_dcapPortal);
         mrSigner = _mrsigner;
         mrEnclave = _mrEnclave;
     }
+
+    event SignerUpdated(address indexed signer);
+    event RewardClaimed(address indexed winner, uint64 indexed round, uint64 guess);
+
+    receive() external payable {}
 
     /**
      * @notice submits the DCAP Attestation Quote to the Portal
@@ -70,6 +83,35 @@ contract Guess is DcapLibCallback {
         // the first 20 bytes of the report data contains the EVM address corresponds to the
         // private key generated in SGX
         signer = address(bytes20(lower));
+
+        emit SignerUpdated(signer);
+    }
+
+    function claimReward(uint64 round, uint64 winningNumber, bytes calldata signature) external {
+        if (address(this).balance < REWARD) {
+            revert Low_Balance();
+        }
+
+        bytes32 hash = keccak256(
+            abi.encodePacked(
+                round,
+                winningNumber,
+                msg.sender
+            )
+        );
+
+        address recovered = hash.recover(signature);
+        if (recovered != signer) {
+            revert Invalid_Enclave_Signer();
+        }
+
+        // reward the user
+        (bool success, ) = msg.sender.call{value: REWARD}("");
+        if (!success) {
+            revert Transfer_Failed(msg.sender);
+        }
+
+        emit RewardClaimed(msg.sender, round, winningNumber);
     }
 
     function _getMrSigner(bytes memory _quoteBody) private pure returns (bytes32 mrsigner) {
