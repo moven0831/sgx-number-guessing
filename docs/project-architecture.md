@@ -6,6 +6,7 @@ sequenceDiagram
     participant WebApp
     participant TEE Server
     participant DCAP Portal Contract
+    participant Automata DCAP Attestation Contract
     participant Guess Contract
 
     User->>WebApp: Connects Wallet
@@ -23,6 +24,8 @@ sequenceDiagram
     TEE Server->>User: DCAP Quote
     note over User: Submits the DCAP Quote to register key
     User->>DCAP Portal Contract: verifyAndAttestOnChain()
+    DCAP Portal Contract->>Automata DCAP Attestation Contract: verifyAndAttestOnChain()
+    Automata DCAP Attestation Contract->>DCAP Portal Contract: Returns (true/false, output)
     alt Quote Verified Successfully
         DCAP Portal Contract->>Guess Contract: Performs the attestAndSetSigner Tcallback to the Guess Contract to register the key
         Guess Contract->>Guess Contract: Checks MRSIGNER and MRENCLAVE values, extracts and stores the TEE EVM address.
