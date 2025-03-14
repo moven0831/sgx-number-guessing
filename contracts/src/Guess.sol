@@ -14,12 +14,15 @@ contract Guess is DcapLibCallback {
     uint256 constant REWARD = 1 ether;
 
     // enclave configuration
-    address public signer;
     bytes32 public immutable mrSigner;
     bytes32 public immutable mrEnclave;
+    
+    // sharing storage slot #10
+    address public signer;
+    uint64 public nonce;
 
-    // 103b1887
-    error Invalid_Enclave_Signer();
+    // 284268bb
+    error Invalid_Enclave_Signature();
     // b97d0dcc
     error SGX_Only();
     // 459fd41c
@@ -94,6 +97,7 @@ contract Guess is DcapLibCallback {
 
         bytes32 hash = keccak256(
             abi.encodePacked(
+                nonce,
                 round,
                 winningNumber,
                 msg.sender
@@ -102,7 +106,7 @@ contract Guess is DcapLibCallback {
 
         address recovered = hash.recover(signature);
         if (recovered != signer) {
-            revert Invalid_Enclave_Signer();
+            revert Invalid_Enclave_Signature();
         }
 
         // reward the user
@@ -111,6 +115,10 @@ contract Guess is DcapLibCallback {
             revert Transfer_Failed(msg.sender);
         }
 
+        unchecked {
+            nonce++;
+        }
+        
         emit RewardClaimed(msg.sender, round, winningNumber);
     }
 

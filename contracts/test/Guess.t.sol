@@ -16,7 +16,7 @@ contract GuessTest is Test {
 
     bytes32 mrenclave = vm.envBytes32("MR_ENCLAVE");
     bytes32 mrsigner = vm.envBytes32("MR_SIGNER");
-    address signer = 0xa6F7B9b4ce833CA93e5375BC61fAC00cB141B85F;
+    address signer = 0x81397AF929AA8d9A17785BEA0F373940c99EA5bF;
 
     function setUp() public {
         vm.startPrank(admin);
@@ -70,7 +70,7 @@ contract GuessTest is Test {
         );
 
         uint64 round = 1;
-        uint64 winningNumber = 2;
+        uint64 winningNumber = 9;
         bytes memory signature = vm.readFileBinary(signaturePath);
 
         vm.prank(user);
