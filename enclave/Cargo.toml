@@ -18,8 +18,9 @@ serde_json = { workspace = true }
 jsonrpsee = { workspace = true, features = ["server", "macros"] }
 async-trait = { workspace = true }
 tokio = { workspace = true , features = ["macros", "net", "rt-multi-thread"] }
-alloy = { workspace = true, features = ["signer-local"] }
+alloy = { workspace = true }
 rand = { workspace = true }
 lazy_static = { workspace = true }
 tracing = { workspace = true }
-tracing-subscriber = { workspace = true, features = ["env-filter"]  }
+tracing-subscriber = { workspace = true, features = ["env-filter"] }
+base = { workspace = true, features = ["eth"] }
