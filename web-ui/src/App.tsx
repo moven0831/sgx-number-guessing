@@ -10,11 +10,8 @@ function App() {
       <div className="max-w-2xl mx-auto px-4">
         <header className="mb-8 text-center">
           <h1 className="text-2xl font-bold text-gray-900 mb-2">
-            TEE Number Guessing Game
+            SGX Number Guessing Game
           </h1>
-          <p className="text-gray-600">
-            To begin, connect your wallet.
-          </p>
         </header>
 
         <div className="bg-white shadow rounded-lg p-6 space-y-6">
