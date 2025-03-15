@@ -24,3 +24,6 @@ lazy_static = { version = "1.5.0" }
 tracing = { version = "0.1.41" }
 tracing-subscriber = { version = "0.3.19" }
 base = { git = "https://github.com/automata-network/base-rs.git" }
+tower = { version = "=0.4.13" }
+tower-http = { version = "0.5.2" }
+hyper = { version = "1.3" }

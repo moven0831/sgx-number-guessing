@@ -6,22 +6,32 @@ pub mod contract;
 
 use crate::api::types::MyApiServer;
 use crate::api::MyRpc;
-use jsonrpsee::server::ServerBuilder;
-use jsonrpsee::server::middleware::http::HostFilterLayer;
 
+use hyper::Method;
+use jsonrpsee::server::Server;
+use std::net::SocketAddr;
 use tower;
+use tower_http::cors::{Any, CorsLayer};
 
 pub async fn entrypoint() {
     let addr = format!("0.0.0.0:{}", 8080);
 
-    let host_filter_middleware = tower::ServiceBuilder::new().layer(
-        HostFilterLayer::new(["*:*"]).unwrap()
+    // Create a CORS middleware with the most permissive settings
+    let cors = CorsLayer::new()
+		// Allow `POST` when accessing the resource
+		.allow_methods([Method::POST])
+		// Allow requests from any origin
+		.allow_origin(Any)
+		.allow_headers([hyper::header::CONTENT_TYPE]);
+
+    let cors_middleware = tower::ServiceBuilder::new().layer(
+        cors
     );
 
     // Create the server
-    let server = ServerBuilder::new()
-        .set_http_middleware(host_filter_middleware)
-        .build(addr.as_str())
+    let server = Server::builder()
+        .set_http_middleware(cors_middleware)
+        .build(addr.parse::<SocketAddr>().unwrap())
         .await
         .expect("Failed to create server");
 
