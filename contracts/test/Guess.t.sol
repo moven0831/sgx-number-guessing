@@ -14,8 +14,10 @@ contract GuessTest is Test {
     DcapPortal portal;
     MockDcapAttestation attestation;
 
-    bytes32 mrenclave = vm.envBytes32("MR_ENCLAVE");
-    bytes32 mrsigner = vm.envBytes32("MR_SIGNER");
+    // this doesn't match with the actual values
+    // these are only for testing
+    bytes32 mrenclave = 0x2f61414bcfdafa6fa2a1ed578686c59eb74ef1437421576a321c44c19adb4bdf;
+    bytes32 mrsigner = 0x10e1b8a5255dcd66418e19ddd75db2397f04060af24b1f91ed41ef1b44705ae5;
     address signer = 0x81397AF929AA8d9A17785BEA0F373940c99EA5bF;
 
     function setUp() public {
