@@ -7,13 +7,20 @@ pub mod contract;
 use crate::api::types::MyApiServer;
 use crate::api::MyRpc;
 use jsonrpsee::server::ServerBuilder;
+use jsonrpsee::server::middleware::http::HostFilterLayer;
 
+use tower;
 
 pub async fn entrypoint() {
     let addr = format!("0.0.0.0:{}", 8080);
 
+    let host_filter_middleware = tower::ServiceBuilder::new().layer(
+        HostFilterLayer::new(["*:*"]).unwrap()
+    );
+
     // Create the server
     let server = ServerBuilder::new()
+        .set_http_middleware(host_filter_middleware)
         .build(addr.as_str())
         .await
         .expect("Failed to create server");
