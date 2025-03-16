@@ -4,7 +4,11 @@ import { teeApi } from '../api/tee'
 import { useGuessContract } from '../hooks/useGuessContract'
 import { useDcapPortal } from '../hooks/useDcapPortal'
 
-export function TeeKeyStatus() {
+interface TeeKeyStatusProps {
+  onRegistrationChange: (isRegistered: boolean) => void
+}
+
+export function TeeKeyStatus({ onRegistrationChange }: TeeKeyStatusProps) {
   const { address } = useAccount()
   const { checkSignerRegistration } = useGuessContract()
   const { verifyAndAttestOnChain } = useDcapPortal()
@@ -23,6 +27,7 @@ export function TeeKeyStatus() {
       setTeeAddress(address)
       const registered = await checkSignerRegistration(address)
       setIsRegistered(registered)
+      onRegistrationChange(registered)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to fetch TEE status')
     }
@@ -46,6 +51,7 @@ export function TeeKeyStatus() {
         const newAddress = await teeApi.rotateKey()
         setTeeAddress(newAddress)
         setIsRegistered(false)
+        onRegistrationChange(false)
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to rotate key')
       }
@@ -151,6 +157,7 @@ export function TeeKeyStatus() {
       if (keyIsRegistered) {
         alert("TEE Key has been successfully attested on-chain.")
         setIsRegistered(keyIsRegistered)
+      onRegistrationChange(keyIsRegistered)
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to attest TEE')

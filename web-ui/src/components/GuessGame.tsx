@@ -6,6 +6,7 @@ import { ClaimReward } from './ClaimReward'
 
 export function GuessGame() {
   const { address } = useAccount()
+  const [isTeeKeyRegistered, setIsTeeKeyRegistered] = useState(false)
   const [guess, setGuess] = useState('')
   const [currentRound, setCurrentRound] = useState<number | null>(null)
   const [result, setResult] = useState<{
@@ -66,9 +67,11 @@ export function GuessGame() {
   if (address) {
     return (
       <div className="space-y-6">
-        <TeeKeyStatus />
-  
-        <div className="bg-yellow-50 border border-yellow-200 p-4 rounded-lg">
+        <TeeKeyStatus onRegistrationChange={setIsTeeKeyRegistered} />
+
+        {isTeeKeyRegistered ? (
+          <div className="space-y-6">
+            <div className="bg-yellow-50 border border-yellow-200 p-4 rounded-lg">
           <h2 className="font-medium text-yellow-800 mb-2">How to Play:</h2>
           <ul className="text-sm text-yellow-700 space-y-1">
             <li>• Enter a number between 1 and 20</li>
@@ -154,6 +157,14 @@ export function GuessGame() {
             winningNumber={Number(guess)}
             signature={result.winningOutput.signature}
           />
+        )}
+          </div>
+        ) : (
+          <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+            <p className="text-sm text-yellow-800">
+              You must submit attestation to register TEE key first before playing the game.
+            </p>
+          </div>
         )}
       </div>
     )
