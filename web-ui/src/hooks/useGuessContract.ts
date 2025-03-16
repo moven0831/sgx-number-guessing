@@ -1,6 +1,5 @@
 import { useCallback } from 'react'
 import { usePublicClient, useWalletClient } from 'wagmi'
-import { parseEther } from 'viem'
 import { automataTestnet } from '../config/wagmi'
 import GuessAbi from '../abi/guess.json'
 

@@ -12,6 +12,7 @@ export function TeeKeyStatus() {
   const [teeAddress, setTeeAddress] = useState<string | null>(null)
   const [isRegistered, setIsRegistered] = useState(false)
   const [isRotating, setIsRotating] = useState(false)
+  const [isGettingAttestation, setIsGettingAttestation] = useState(false)
   const [isAttesting, setIsAttesting] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -37,36 +38,122 @@ export function TeeKeyStatus() {
     if (!address) return
     setError(null)
     setIsRotating(true)
+
+    let confirmMessage = 'Are you sure you want to rotate TEE keys? This action will invalidate all previous attestations.'
     
-    try {
-      const newAddress = await teeApi.rotateKey()
-      setTeeAddress(newAddress)
-      setIsRegistered(false)
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to rotate key')
-    } finally {
-      setIsRotating(false)
+    if (window.confirm(confirmMessage)) {
+      try {
+        const newAddress = await teeApi.rotateKey()
+        setTeeAddress(newAddress)
+        setIsRegistered(false)
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to rotate key')
+      }
     }
+
+    setIsRotating(false)
   }
 
-  const handleAttest = async () => {
+  const handleGetDcap = async () => {
+    if (!address || !teeAddress) return
+    setError(null)
+    setIsGettingAttestation(true)
+
+    try {
+      // Get attestation quote and verify on-chain
+      const quote = await teeApi.getSignerAttestation()
+
+      // once users have the quote, prompt them to save as a binary file
+
+      // Create a blob from the Uint8Array
+      const blob = new Blob([quote], { type: 'application/octet-stream' })
+
+      // Create a URL for the blob
+      const url = URL.createObjectURL(blob)
+
+      // Create a temporary download link
+      const downloadLink = document.createElement('a')
+      downloadLink.href = url
+      downloadLink.download = `quote-${teeAddress}.bin`
+      downloadLink.style.display = 'none'
+
+      // Append to document, trigger click, and remove
+      document.body.appendChild(downloadLink)
+      downloadLink.click()
+      document.body.removeChild(downloadLink)
+
+      // Clean up the URL object
+      URL.revokeObjectURL(url)
+
+      // const guessContractAddress = import.meta.env.VITE_GUESS_CONTRACT_ADDRESS
+      // if (!guessContractAddress) throw new Error('GUESS_CONTRACT_ADDRESS not set')
+
+      // await verifyAndAttestOnChain(quote, guessContractAddress)
+      // setIsRegistered(true)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to attest TEE')
+    }
+
+    setIsGettingAttestation(false)
+  }
+
+  const handleAttestKey = async() => {
     if (!address || !teeAddress) return
     setError(null)
     setIsAttesting(true)
 
     try {
-      // Get attestation quote and verify on-chain
-      const quote = await teeApi.getSignerAttestation()
       const guessContractAddress = import.meta.env.VITE_GUESS_CONTRACT_ADDRESS
       if (!guessContractAddress) throw new Error('GUESS_CONTRACT_ADDRESS not set')
+      
+      // prompt users to upload binary file and read it as a Uint8Array
+      // Show a prompt to the user
+      alert("You must request and download the DCAP quote for the key before proceeding.")
+      // Create a hidden file input
+      const fileInput = document.createElement('input')
+      fileInput.type = 'file'
+      fileInput.accept = '.bin'
+      fileInput.style.display = 'none'
+      document.body.appendChild(fileInput)
 
-      await verifyAndAttestOnChain(quote, guessContractAddress)
-      setIsRegistered(true)
+      // Promisify the file selection
+      const quoteData = await new Promise<Uint8Array>((resolve, reject) => {
+        fileInput.onchange = async (e) => {
+          const file = (e.target as HTMLInputElement).files?.[0]
+          if (!file) {
+            reject(new Error('No file selected'))
+            return
+          }
+          
+          try {
+            const arrayBuffer = await file.arrayBuffer()
+            const uint8Array = new Uint8Array(arrayBuffer)
+            resolve(uint8Array)
+          } catch (error) {
+            reject(error || new Error('Failed to read file'))
+          } finally {
+            document.body.removeChild(fileInput)
+          }
+        }
+        
+        fileInput.onerror = () => {
+          document.body.removeChild(fileInput)
+          reject(new Error('File selection failed'))
+        }
+        
+        // Trigger file selection dialog
+        fileInput.click()
+      })
+
+      await verifyAndAttestOnChain(quoteData, guessContractAddress)
+      
+      const keyIsRegistered = await checkSignerRegistration(teeAddress)
+      setIsRegistered(keyIsRegistered)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to attest TEE')
-    } finally {
-      setIsAttesting(false)
     }
+      
+    setIsAttesting(false)
   }
 
   return (
@@ -115,17 +202,33 @@ export function TeeKeyStatus() {
 
         {!isRegistered && (
           <button
-            onClick={handleAttest}
-            disabled={!teeAddress || isRotating || isAttesting}
+            onClick={handleGetDcap}
+            disabled={!teeAddress || isRotating || isAttesting || isGettingAttestation}
             className={`
               px-3 py-2 text-sm font-medium rounded-md
-              ${!teeAddress || isRotating || isAttesting
+              ${!teeAddress || isRotating || isAttesting || isGettingAttestation
                 ? 'bg-blue-300 cursor-not-allowed'
                 : 'bg-blue-600 text-white hover:bg-blue-700'
               }
             `}
           >
-            {isAttesting ? 'Attesting...' : 'Register Key'}
+            {isGettingAttestation ? 'Getting Attestation Report...' : 'Get Attestation Report'}
+          </button>
+        )}
+
+        {!isRegistered && (
+          <button
+            onClick={handleAttestKey}
+            disabled={!teeAddress || isRotating || isAttesting || isGettingAttestation}
+            className={`
+              px-3 py-2 text-sm font-medium rounded-md
+              ${!teeAddress || isRotating || isAttesting || isGettingAttestation
+                ? 'bg-blue-300 cursor-not-allowed'
+                : 'bg-blue-600 text-white hover:bg-blue-700'
+              }
+            `}
+          >
+            {isAttesting ? 'Attesting...' : 'Attest Key Onchain'}
           </button>
         )}
       </div>

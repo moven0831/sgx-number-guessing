@@ -1,7 +1,10 @@
 import { useCallback } from 'react'
 import { usePublicClient, useWalletClient } from 'wagmi'
 import { automataTestnet } from '../config/wagmi'
-import GuessAbi from '../abi/guess.json'
+import { Interface } from 'ethers'
+import Guess from '../abi/guess.json'
+import DcapPortal from '../abi/DcapPortal.json'
+
 
 export function useDcapPortal() {
   const { data: walletClient } = useWalletClient()
@@ -16,36 +19,39 @@ export function useDcapPortal() {
   const verifyAndAttestOnChain = useCallback(async (
     quote: Uint8Array,
     guessContractAddress: string
-  ) => {
+  ) => {    
     if (!walletClient) throw new Error('Wallet not connected')
+
+    const guessIface = new Interface(Guess.abi)
+    const attestAndSetSignerCalldata = guessIface.encodeFunctionData('attestAndSetSigner', [])
+    
+    const callback = {
+      value: 0,
+      to: guessContractAddress,
+      params: attestAndSetSignerCalldata
+    }
+
+    console.log("simulate before...")
 
     // Call verifyAndAttestOnChain on DCAP Portal
     // This will internally trigger attestAndSetSigner on the Guess contract if verification passes
+    // Convert quote Uint8Array to hexadecimal string
+    const quoteHex = '0x' + Array.from(quote)
+      .map(b => b.toString(16).padStart(2, '0'))
+      .join('')
+      
     const { request } = await publicClient.simulateContract({
       account: walletClient.account.address,
-      address: portalAddress as `0x${string}`,
-      abi: [{
-        name: 'verifyAndAttestOnChain',
-        type: 'function',
-        stateMutability: 'nonpayable',
-        inputs: [
-          { name: 'quote', type: 'bytes' },
-          { name: 'callback', type: 'tuple', components: [
-            { name: 'target', type: 'address' },
-            { name: 'extraData', type: 'bytes' }
-          ]}
-        ],
-        outputs: [],
-      }],
+      address: portalAddress,
+      abi: DcapPortal.abi,
       functionName: 'verifyAndAttestOnChain',
       args: [
-        `0x${Buffer.from(quote).toString('hex')}` as `0x${string}`,
-        {
-          target: guessContractAddress as `0x${string}`,
-          extraData: '0x' as `0x${string}` // No extra data needed for attestAndSetSigner
-        }
+        quoteHex,
+        callback
       ]
     })
+
+    console.log("simulate after...")
 
     return walletClient.writeContract(request)
   }, [walletClient, publicClient, portalAddress])
