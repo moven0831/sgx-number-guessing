@@ -148,7 +148,10 @@ export function TeeKeyStatus() {
       await verifyAndAttestOnChain(quoteData, guessContractAddress)
       
       const keyIsRegistered = await checkSignerRegistration(teeAddress)
-      setIsRegistered(keyIsRegistered)
+      if (keyIsRegistered) {
+        alert("TEE Key has been successfully attested on-chain.")
+        setIsRegistered(keyIsRegistered)
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to attest TEE')
     }

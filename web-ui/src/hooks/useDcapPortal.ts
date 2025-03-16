@@ -31,8 +31,6 @@ export function useDcapPortal() {
       params: attestAndSetSignerCalldata
     }
 
-    console.log("simulate before...")
-
     // Call verifyAndAttestOnChain on DCAP Portal
     // This will internally trigger attestAndSetSigner on the Guess contract if verification passes
     // Convert quote Uint8Array to hexadecimal string
@@ -50,8 +48,6 @@ export function useDcapPortal() {
         callback
       ]
     })
-
-    console.log("simulate after...")
 
     return walletClient.writeContract(request)
   }, [walletClient, publicClient, portalAddress])
