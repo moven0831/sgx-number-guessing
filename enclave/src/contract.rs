@@ -1,5 +1,6 @@
-use alloy::{primitives::Address, providers::ProviderBuilder, sol, transports::http::reqwest::Url};
+use alloy::{primitives::Address, sol};
 use std::env;
+use base::eth::Eth;
 
 // Guess contract interface to fetch the current nonce
 sol! {
@@ -13,9 +14,6 @@ sol! {
 const RPC_URL: &str = "https://1rpc.io/ata/testnet";
 
 pub async fn get_nonce() -> u64 {
-    let rpc_url: Url = RPC_URL.parse().unwrap();
-    let provider = ProviderBuilder::new().on_http(rpc_url);
-
     let guess_address = if let Ok(address) = env::var("GUESS_ADDRESS") {
         address.parse::<Address>().unwrap()
     } else {
@@ -28,8 +26,9 @@ pub async fn get_nonce() -> u64 {
     if guess_address.is_zero() {
         return 0;
     } else {
-        let guess = IGuess::new(guess_address, provider);
-        let ret = guess.nonce().call().await.unwrap();
+        let client = Eth::dial(RPC_URL, None).unwrap();
+        let nonce_call = IGuess::nonceCall {};
+        let ret = client.call(guess_address, &nonce_call).await.unwrap();
         ret._0
     }
 }
