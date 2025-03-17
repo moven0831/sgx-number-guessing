@@ -68,9 +68,9 @@ export function GuessGame() {
   if (address) {
     return (
       <div className="space-y-6">
-        {/* <TeeKeyStatus onRegistrationChange={setIsTeeKeyRegistered} /> */}
+        <TeeKeyStatus onRegistrationChange={setIsTeeKeyRegistered}/>
 
-        {true ? (
+        {isTeeKeyRegistered ? (
           <div className="space-y-6">
             <div className="bg-yellow-50 border border-yellow-200 p-4 rounded-lg">
           <h2 className="font-medium text-yellow-800 mb-2">How to Play:</h2>
