@@ -1,6 +1,7 @@
 import { useCallback } from 'react'
 import { usePublicClient, useWalletClient } from 'wagmi'
 import { automataTestnet } from '../config/wagmi'
+import { hexlify } from 'ethers'
 import GuessAbi from '../abi/guess.json'
 
 export function useGuessContract() {
@@ -15,7 +16,7 @@ export function useGuessContract() {
 
   const readContract = useCallback(async (functionName: string, args: any[] = []) => {
     return publicClient.readContract({
-      address: contractAddress as `0x${string}`,
+      address: contractAddress,
       abi: GuessAbi.abi,
       functionName,
       args,
@@ -27,7 +28,7 @@ export function useGuessContract() {
     
     const { request } = await publicClient.simulateContract({
       account: walletClient.account.address,
-      address: contractAddress as `0x${string}`,
+      address: contractAddress,
       abi: GuessAbi.abi,
       functionName,
       args,
@@ -50,7 +51,8 @@ export function useGuessContract() {
     winningNumber: number,
     signature: Uint8Array
   ) => {
-    return writeContract('claimReward', [round, winningNumber, signature])
+    const hexSignature = hexlify(signature)
+    return writeContract('claimReward', [round, winningNumber, hexSignature])
   }, [writeContract])
 
   const getNonce = useCallback(async (): Promise<number> => {

@@ -53,7 +53,7 @@ export function ClaimReward({ round, winningNumber, signature }: ClaimRewardProp
         onClick={handleClaim}
         disabled={isClaiming}
         className={`
-          w-full flex justify-center py-2 px-4 rounded-md text-sm font-medium text-white
+          px-3 py-2 text-sm font-medium rounded-md
           ${isClaiming
             ? 'bg-green-400 cursor-not-allowed'
             : 'bg-green-600 hover:bg-green-700'}

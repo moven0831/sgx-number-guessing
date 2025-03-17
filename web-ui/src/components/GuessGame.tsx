@@ -36,7 +36,6 @@ export function GuessGame() {
       // Submit guess to TEE
       const response = await teeApi.guessNumber(address, Number(guess))
       setResult(response)
-      console.log("response: ", response)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred while submitting your guess')
     } finally {
