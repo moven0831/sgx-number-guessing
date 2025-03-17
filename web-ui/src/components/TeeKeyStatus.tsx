@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useAccount } from 'wagmi'
+import { useAccount, usePublicClient } from 'wagmi'
 import { teeApi } from '../api/tee'
 import { useGuessContract } from '../hooks/useGuessContract'
 import { useDcapPortal } from '../hooks/useDcapPortal'
@@ -12,6 +12,7 @@ export function TeeKeyStatus({ onRegistrationChange }: TeeKeyStatusProps) {
   const { address } = useAccount()
   const { checkSignerRegistration } = useGuessContract()
   const { verifyAndAttestOnChain } = useDcapPortal()
+  const publicClient = usePublicClient()
   
   const [teeAddress, setTeeAddress] = useState<string | null>(null)
   const [isRegistered, setIsRegistered] = useState(false)
@@ -90,12 +91,6 @@ export function TeeKeyStatus({ onRegistrationChange }: TeeKeyStatusProps) {
 
       // Clean up the URL object
       URL.revokeObjectURL(url)
-
-      // const guessContractAddress = import.meta.env.VITE_GUESS_CONTRACT_ADDRESS
-      // if (!guessContractAddress) throw new Error('GUESS_CONTRACT_ADDRESS not set')
-
-      // await verifyAndAttestOnChain(quote, guessContractAddress)
-      // setIsRegistered(true)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to attest TEE')
     }
@@ -114,7 +109,7 @@ export function TeeKeyStatus({ onRegistrationChange }: TeeKeyStatusProps) {
       
       // prompt users to upload binary file and read it as a Uint8Array
       // Show a prompt to the user
-      alert("You must request and download the DCAP quote for the key before proceeding.")
+      alert("You must first request and download DCAP quote before attesting.")
       // Create a hidden file input
       const fileInput = document.createElement('input')
       fileInput.type = 'file'
@@ -151,13 +146,26 @@ export function TeeKeyStatus({ onRegistrationChange }: TeeKeyStatusProps) {
         fileInput.click()
       })
 
-      await verifyAndAttestOnChain(quoteData, guessContractAddress)
+      const txHash = await verifyAndAttestOnChain(quoteData, guessContractAddress)
       
-      const keyIsRegistered = await checkSignerRegistration(teeAddress)
-      if (keyIsRegistered) {
-        alert("TEE Key has been successfully attested on-chain.")
-        setIsRegistered(keyIsRegistered)
-      onRegistrationChange(keyIsRegistered)
+      
+      if (!publicClient) {
+        throw new Error('WagmiError: Public client not available')
+      }
+      
+      // Wait for transaction confirmation
+      const receipt = await publicClient.waitForTransactionReceipt({ hash: txHash })
+      
+      if (receipt.status === 'success') {
+        // Check registration after confirmation
+        const keyIsRegistered = await checkSignerRegistration(teeAddress)
+        if (keyIsRegistered) {
+          alert("TEE Key has been successfully attested on-chain.")
+          setIsRegistered(keyIsRegistered)
+          onRegistrationChange(keyIsRegistered)
+        }
+      } else {
+        throw new Error('Transaction failed')
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to attest TEE')
@@ -198,12 +206,12 @@ export function TeeKeyStatus({ onRegistrationChange }: TeeKeyStatusProps) {
       <div className="flex gap-3">
         <button
           onClick={handleRotateKey}
-          disabled={isRotating || isAttesting}
+          disabled={!teeAddress || isRotating || isAttesting}
           className={`
             px-3 py-2 text-sm font-medium rounded-md
             ${isRotating || isAttesting
-              ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-              : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'
+              ? 'bg-blue-300 cursor-not-allowed'
+              : 'bg-blue-600 text-white hover:bg-blue-700'
             }
           `}
         >

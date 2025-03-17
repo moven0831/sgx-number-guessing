@@ -74,9 +74,10 @@ export function GuessGame() {
             <div className="bg-yellow-50 border border-yellow-200 p-4 rounded-lg">
           <h2 className="font-medium text-yellow-800 mb-2">How to Play:</h2>
           <ul className="text-sm text-yellow-700 space-y-1">
-            <li>• Enter a number between 1 and 20</li>
-            <li>• If you guess correctly, you win a reward!</li>
-            <li>• The number changes after each correct guess</li>
+            <li>Get your wallet <a href="https://www.l2faucet.com/automata" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">funded</a> with ATA testnet tokens.</li>
+            <li>Enter a number between 1 and 20.</li>
+            <li>If you guess correctly, you win a reward!</li>
+            <li>The number changes after each correct guess.</li>
           </ul>
         </div>
   
