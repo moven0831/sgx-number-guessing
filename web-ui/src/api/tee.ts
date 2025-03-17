@@ -1,3 +1,12 @@
+type ApiCorrectResponse = {
+  Correct: {
+    messageBytes: Uint8Array
+    signature: Uint8Array
+  }
+}
+
+type ApiGuessResponse = 'TooHigh' | 'TooLow' | ApiCorrectResponse
+
 export interface GuessResponse {
   type: 'Correct' | 'TooHigh' | 'TooLow'
   winningOutput?: {
@@ -57,26 +66,21 @@ export class TeeApi {
   }
 
   async guessNumber(userAddress: string, number: number): Promise<GuessResponse> {
-    const result = await this.rpcCall<{
-      type: 'Correct' | 'TooHigh' | 'TooLow'
-      winningOutput?: {
-        message_bytes: number[]
-        signature: number[]
-      }
-    }>('guess_number', [userAddress, number])
+    const result = await this.rpcCall<ApiGuessResponse>('guess_number', [userAddress, number])
 
     // Transform the response to match our interface
-    if (result.type === 'Correct' && result.winningOutput) {
+    if (typeof result === 'object' && result.Correct) {
       return {
         type: 'Correct',
         winningOutput: {
-          messageBytes: new Uint8Array(result.winningOutput.message_bytes),
-          signature: new Uint8Array(result.winningOutput.signature),
+          messageBytes: new Uint8Array(result.Correct.messageBytes),
+          signature: new Uint8Array(result.Correct.signature),
         },
       }
     }
 
-    return { type: result.type }
+    const resultType = result as 'TooHigh' | 'TooLow'
+    return { type: resultType, winningOutput: undefined }
   }
 
   async rotateKey(): Promise<string> {
