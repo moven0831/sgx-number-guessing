@@ -1018,8 +1018,7 @@ checksum = "773648b94d0e5d620f64f280777445740e61fe701025087ec8b57f45c791888b"
 [[package]]
 name = "cpufeatures"
 version = "0.2.14"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "608697df725056feaccfa42cffdaeeec3fccc4ffc38358ecd19b243e716a78e0"
+source = "git+https://github.com/automata-network/RustCrypto-utils-ass?branch=cpufeatures-v0.2.14#18dddec6cf1551cdca950f5c4d04f77b4d014671"
 dependencies = [
  "libc",
 ]
@@ -1183,10 +1182,12 @@ dependencies = [
  "async-trait",
  "automata-sgx-sdk",
  "base",
+ "cpufeatures",
  "hyper",
  "jsonrpsee",
  "lazy_static",
  "rand",
+ "ring",
  "serde",
  "serde_json",
  "tokio",
@@ -2517,14 +2518,14 @@ dependencies = [
 
 [[package]]
 name = "ring"
-version = "0.17.9"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e75ec5e92c4d8aede845126adc388046234541629e76029599ed35a003c7ed24"
+version = "0.17.8"
+source = "git+https://github.com/automata-network/ring-sgx#e9b37b8f5a7c3331b21a6650f1ce6653d70d0923"
 dependencies = [
  "cc",
  "cfg-if",
  "getrandom",
  "libc",
+ "spin",
  "untrusted",
  "windows-sys 0.52.0",
 ]
@@ -3118,6 +3119,12 @@ dependencies = [
  "rand",
  "sha1",
 ]
+
+[[package]]
+name = "spin"
+version = "0.9.8"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6980e8d7511241f8acf4aebddbb1ff938df5eebe98691418c4468d0b72a96a67"
 
 [[package]]
 name = "spki"
