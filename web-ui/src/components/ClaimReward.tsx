@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useGuessContract } from '../hooks/useGuessContract'
+import { usePublicClient } from 'wagmi'
 
 interface ClaimRewardProps {
   round: number
@@ -12,6 +13,7 @@ export function ClaimReward({ round, winningNumber, signature }: ClaimRewardProp
   const [isClaiming, setIsClaiming] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [claimed, setClaimed] = useState(false)
+  const publicClient = usePublicClient()
 
   const handleClaim = async () => {
     if (claimed) return
@@ -20,13 +22,25 @@ export function ClaimReward({ round, winningNumber, signature }: ClaimRewardProp
 
     try {
       // Submit reward claim
-      await claimReward(round, winningNumber, signature)
-      setClaimed(true)
+      const txHash = await claimReward(round, winningNumber, signature)
+      if (!publicClient) {
+        throw new Error('WagmiError: Public client not available')
+      }
+      
+      // Wait for transaction confirmation
+      const receipt = await publicClient.waitForTransactionReceipt({ hash: txHash })
+
+      if (receipt.status === 'success') {
+        setClaimed(true)
+      } else {
+        throw new Error('Transaction Failed')
+      }
+
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to claim reward')
-    } finally {
-      setIsClaiming(false)
     }
+
+    setIsClaiming(false)
   }
 
   if (claimed) {
