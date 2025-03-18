@@ -18,6 +18,7 @@ export function GuessGame() {
   } | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [rewardClaimed, setRewardClaimed] = useState(false)
 
   useEffect(() => {
     if (address) {
@@ -58,11 +59,16 @@ export function GuessGame() {
     }
   }
 
-  const handleNextRound = async() => {
+  const handleNextRound = async () => {
+    if (!rewardClaimed) {
+      const confirmNext = window.confirm('You haven\'t claimed your reward yet. Are you sure you want to proceed to the next round?')
+      if (!confirmNext) return
+    }
     const newRound = await teeApi.getRound()
     setCurrentRound(newRound)
     setGuess('')
     setResult(null)
+    setRewardClaimed(false)
   }
 
   if (address) {
@@ -75,7 +81,6 @@ export function GuessGame() {
             <div className="bg-yellow-50 border border-yellow-200 p-4 rounded-lg">
           <h2 className="font-medium text-yellow-800 mb-2">How to Play:</h2>
           <ul className="text-sm text-yellow-700 space-y-1">
-            <li>Get your wallet <a href="https://www.l2faucet.com/automata" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">funded</a> with ATA testnet tokens.</li>
             <li>Enter a number between 1 and 20.</li>
             <li>If you guess correctly, you win a reward!</li>
             <li>The number changes after each correct guess.</li>
@@ -158,17 +163,27 @@ export function GuessGame() {
         {result && result.type === 'Correct' && result.winningOutput && currentRound && (
           <div className="space-y-6">
             <ClaimReward
-              round={currentRound} // Since round was incremented after win
+              round={currentRound}
               winningNumber={Number(guess)}
               signature={result.winningOutput.signature}
+              onClaimStateChange={setRewardClaimed}
             />
 
-            <button
-              onClick={handleNextRound}
-              className={"px-3 py-2 text-sm font-medium rounded-md bg-blue-600 text-white hover:bg-blue-700"}
-            >
-              Next Round
-            </button>
+            <div>
+              {!rewardClaimed && (
+                <div className="mb-4 p-3 text-sm text-yellow-700 bg-yellow-50 border border-yellow-200 rounded-md">
+                  ⚠️ Don't forget to claim your reward before proceeding to the next round!
+                </div>
+              )}
+              <button
+                onClick={handleNextRound}
+                className={`px-3 py-2 text-sm font-medium rounded-md text-white ${
+                  rewardClaimed ? 'bg-blue-600 hover:bg-blue-700' : 'bg-blue-400'
+                }`}
+              >
+                Next Round
+              </button>
+            </div>
           </div>
         )}
 
@@ -177,6 +192,10 @@ export function GuessGame() {
           <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
             <p className="text-sm text-yellow-800">
               You must submit attestation to register TEE key first before playing the game.
+            </p>
+
+            <p className="text-sm text-yellow-800"> 
+              If you need test tokens, click <a href="https://www.l2faucet.com/automata" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">here</a> to get your wallet funded. 
             </p>
           </div>
         )}

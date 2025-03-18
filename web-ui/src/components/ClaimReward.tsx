@@ -6,9 +6,10 @@ interface ClaimRewardProps {
   round: number
   winningNumber: number
   signature: Uint8Array
+  onClaimStateChange?: (claimed: boolean) => void
 }
 
-export function ClaimReward({ round, winningNumber, signature }: ClaimRewardProps) {
+export function ClaimReward({ round, winningNumber, signature, onClaimStateChange }: ClaimRewardProps) {
   const { claimReward } = useGuessContract()
   const [isClaiming, setIsClaiming] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -32,6 +33,7 @@ export function ClaimReward({ round, winningNumber, signature }: ClaimRewardProp
 
       if (receipt.status === 'success') {
         setClaimed(true)
+        onClaimStateChange?.(true)
       } else {
         throw new Error('Transaction Failed')
       }
