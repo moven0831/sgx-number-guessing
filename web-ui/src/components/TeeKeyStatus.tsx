@@ -69,28 +69,31 @@ export function TeeKeyStatus({ onRegistrationChange }: TeeKeyStatusProps) {
     try {
       // Get attestation quote and verify on-chain
       const quote = await teeApi.getSignerAttestation()
+      if (quote.byteLength > 0) {
+        // once users have the quote, prompt them to save as a binary file
 
-      // once users have the quote, prompt them to save as a binary file
+        // Create a blob from the Uint8Array
+        const blob = new Blob([quote], { type: 'application/octet-stream' })
 
-      // Create a blob from the Uint8Array
-      const blob = new Blob([quote], { type: 'application/octet-stream' })
+        // Create a URL for the blob
+        const url = URL.createObjectURL(blob)
 
-      // Create a URL for the blob
-      const url = URL.createObjectURL(blob)
+        // Create a temporary download link
+        const downloadLink = document.createElement('a')
+        downloadLink.href = url
+        downloadLink.download = `quote-${teeAddress}.bin`
+        downloadLink.style.display = 'none'
 
-      // Create a temporary download link
-      const downloadLink = document.createElement('a')
-      downloadLink.href = url
-      downloadLink.download = `quote-${teeAddress}.bin`
-      downloadLink.style.display = 'none'
+        // Append to document, trigger click, and remove
+        document.body.appendChild(downloadLink)
+        downloadLink.click()
+        document.body.removeChild(downloadLink)
 
-      // Append to document, trigger click, and remove
-      document.body.appendChild(downloadLink)
-      downloadLink.click()
-      document.body.removeChild(downloadLink)
-
-      // Clean up the URL object
-      URL.revokeObjectURL(url)
+        // Clean up the URL object
+        URL.revokeObjectURL(url)
+      } else {
+        throw new Error("Failed to get attestation report. The connected server may not support DCAP Attestations.")
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to attest TEE')
     }
@@ -197,12 +200,6 @@ export function TeeKeyStatus({ onRegistrationChange }: TeeKeyStatusProps) {
         )}
       </div>
 
-      {error && (
-        <div className="p-3 text-sm text-red-500 bg-red-50 border border-red-200 rounded-md">
-          {error}
-        </div>
-      )}
-
       <div className="flex gap-3">
         <button
           onClick={handleRotateKey}
@@ -250,6 +247,13 @@ export function TeeKeyStatus({ onRegistrationChange }: TeeKeyStatusProps) {
           </button>
         )}
       </div>
+
+    {error && (
+      <div className="p-3 text-sm text-red-500 bg-red-50 border border-red-200 rounded-md">
+        {error}
+      </div>
+    )}
+
     </div>
   )
 }
