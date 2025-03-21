@@ -101,7 +101,7 @@ impl MyApiServer for MyRpc {
 
                 tracing::info!("Winning message: {:?}", winning_message);
 
-                let winning_message_vec = winning_message.to_vec(nonce);
+                let winning_message_vec = winning_message.to_vec(nonce, &contract_address);
 
                 let mut hasher = Keccak256::new();
                 hasher.update(&winning_message_vec);
