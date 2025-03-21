@@ -1,58 +1,44 @@
 // SPDX-License-Identifier: APACHE-2.0
 pragma solidity ^0.8.13;
 
-import { DcapLibCallback } from "@dcap-portal/src/lib/DcapLibCallback.sol";
-import { Output } from "@dcap-portal/src/lib/Output.sol";
-import { ECDSA } from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
+import {IGuess, IERC165} from "./interfaces/IGuess.sol";
 
-contract Guess is DcapLibCallback {
+import {DcapLibCallback} from "@dcap-portal/src/lib/DcapLibCallback.sol";
+import {Output} from "@dcap-portal/src/lib/Output.sol";
+import {ECDSA} from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
+import {ERC165} from "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 
+interface IGuessNFT {
+    function safeMint(address to, uint256 tokenId) external;
+}
+
+contract Guess is ERC165, IGuess, DcapLibCallback {
     using ECDSA for bytes32;
 
     bytes4 constant SGX_TEE = 0x00000000;
     uint256 constant ISV_ENCLAVE_REPORT_LENGTH = 384;
-    uint256 constant REWARD = 1 ether;
+
+    // NFT address
+    IGuessNFT public immutable nft;
 
     // enclave configuration
     bytes32 public immutable mrSigner;
     bytes32 public immutable mrEnclave;
-    
+
     // sharing storage slot #10
     address public signer;
     uint64 public nonce;
 
-    // 284268bb
-    error Invalid_Enclave_Signature();
-    // b97d0dcc
-    error SGX_Only();
-    // 459fd41c
-    error Invalid_Quote_Body();
-    // 6f7a8de0
-    error MRENCLAVE_Mismatch();
-    // d5527477
-    error MRSIGNER_Mismatch();
-    // 44fc0270
-    error Low_Balance();
-    // 0b3d77a5
-    error Transfer_Failed(address recipient);
-
-    constructor (address _dcapPortal, bytes32 _mrsigner, bytes32 _mrEnclave) {
+    constructor(address _dcapPortal, bytes32 _mrsigner, bytes32 _mrEnclave, address _nft) {
         __DcapLibCallbackInit(_dcapPortal);
         mrSigner = _mrsigner;
         mrEnclave = _mrEnclave;
+        nft = IGuessNFT(_nft);
     }
-
-    event SignerUpdated(address indexed signer);
-    event RewardClaimed(address indexed winner, uint64 indexed round, uint64 guess);
 
     receive() external payable {}
 
-    /**
-     * @notice submits the DCAP Attestation Quote to the Portal
-     * @notice this method is then called by DCAP Portal after successful verification
-     * @notice of the DCAP Attestation Report
-     */
-    function attestAndSetSigner() external fromDcapPortal {
+    function attestAndSetSigner() external override fromDcapPortal {
         bytes memory attestationOutput = _attestationOutput();
 
         Output memory output = _deserializeAttestationOutput(attestationOutput);
@@ -81,8 +67,8 @@ contract Guess is DcapLibCallback {
 
         // get the signer address
         bytes memory reportData = _attestationReportUserData(output.tee, output.quoteBody);
-        (bytes32 lower, ) = _attestationReportUserDataBytes32(reportData);
-        
+        (bytes32 lower,) = _attestationReportUserDataBytes32(reportData);
+
         // the first 20 bytes of the report data contains the EVM address corresponds to the
         // private key generated in SGX
         signer = address(bytes20(lower));
@@ -90,36 +76,27 @@ contract Guess is DcapLibCallback {
         emit SignerUpdated(signer);
     }
 
-    function claimReward(uint64 round, uint64 winningNumber, bytes calldata signature) external {
-        if (address(this).balance < REWARD) {
-            revert Low_Balance();
-        }
-
-        bytes32 hash = keccak256(
-            abi.encodePacked(
-                nonce,
-                round,
-                winningNumber,
-                msg.sender
-            )
-        );
+    function claimReward(uint64 round, uint64 winningNumber, bytes calldata signature) external override {
+        bytes32 hash = keccak256(abi.encodePacked(nonce, address(this), round, winningNumber, msg.sender));
 
         address recovered = hash.recover(signature);
         if (recovered != signer) {
             revert Invalid_Enclave_Signature();
         }
 
-        // reward the user
-        (bool success, ) = msg.sender.call{value: REWARD}("");
-        if (!success) {
-            revert Transfer_Failed(msg.sender);
-        }
+        // mint the NFT to the user
+        // use the hash of the message as the token ID
+        nft.safeMint(msg.sender, uint256(hash));
 
         unchecked {
             nonce++;
         }
-        
+
         emit RewardClaimed(msg.sender, round, winningNumber);
+    }
+
+    function supportsInterface(bytes4 interfaceId) public view override(ERC165, IERC165) returns (bool) {
+        return interfaceId == type(IGuess).interfaceId || super.supportsInterface(interfaceId);
     }
 
     function _getMrSigner(bytes memory _quoteBody) private pure returns (bytes32 mrsigner) {
@@ -142,5 +119,4 @@ contract Guess is DcapLibCallback {
             word := mload(ptr)
         }
     }
-
 }
