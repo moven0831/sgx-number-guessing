@@ -7,7 +7,7 @@ pub mod types;
 use output::*;
 use types::MyApiServer;
 
-use super::contract::get_nonce;
+use super::contract::{check_contract_interface, get_nonce};
 use super::state::{State, STATE};
 use async_trait::async_trait;
 use jsonrpsee::core::RpcResult;
@@ -134,7 +134,7 @@ impl MyApiServer for MyRpc {
         if state.contains_key(&contract_address) {
             let state = state.get_mut(&contract_address).unwrap();
             state.rotate_key();
-            Ok("Key rotated successfully".to_string())
+            Ok(state.get_signer_address().to_string())
         } else {
             Err(ErrorObject::from(ErrorCode::InvalidParams))
         }
@@ -142,6 +142,5 @@ impl MyApiServer for MyRpc {
 }
 
 async fn check_contract_state(contract_address: &Address) -> bool {
-    // TODO
-    true
+    check_contract_interface(contract_address).await
 }
