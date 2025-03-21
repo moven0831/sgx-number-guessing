@@ -23,10 +23,11 @@ pub struct WinningMessage {
 }
 
 impl WinningMessage {
-    pub fn to_vec(&self, nonce: u64) -> Vec<u8> {
+    pub fn to_vec(&self, nonce: u64, contract_address: &Address) -> Vec<u8> {
         let mut message = Vec::with_capacity(44);
         let address = Address::from_str(&self.winner_address).unwrap();
         message.extend_from_slice(&nonce.to_be_bytes());
+        message.extend_from_slice(contract_address.as_slice());
         message.extend_from_slice(&self.round.to_be_bytes());
         message.extend_from_slice(&self.number.to_be_bytes());
         message.extend_from_slice(address.as_slice());
