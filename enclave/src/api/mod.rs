@@ -61,8 +61,10 @@ impl MyApiServer for MyRpc {
             // pass the signer address as user data in the attestation report
             // Must be run on sgx-supported machine
             let mut data = [0u8; 64];
+            // occupies 20 bytes of the first 32 bytes
             data[..20].copy_from_slice(current_signer.as_slice());
-            data[20..].copy_from_slice(contract_address.as_slice());
+            // occupies 20 bytes of the last 32 bytes
+            data[32..52].copy_from_slice(contract_address.as_slice());
             let attestation = dcap_quote(data).unwrap_or_default();
             Ok(attestation)
         } else {
