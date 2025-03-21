@@ -1,9 +1,10 @@
 use alloy::primitives::Address;
 use lazy_static::lazy_static;
+use std::collections::HashMap;
 use std::sync::Mutex;
 
 lazy_static! {
-    pub static ref STATE: Mutex<State> = Mutex::new(State::new());
+    pub static ref STATE: Mutex<HashMap<Address, State>> = Mutex::new(HashMap::new());
 }
 
 use base::eth::Keypair;
@@ -14,7 +15,7 @@ use rand::Rng;
 pub struct State {
     round: u64,
     current_round_number: u64,
-    keypair: Keypair,
+    keypair: Keypair
 }
 
 impl State {
