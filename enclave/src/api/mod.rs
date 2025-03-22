@@ -18,6 +18,32 @@ pub struct MyRpc;
 
 #[async_trait]
 impl MyApiServer for MyRpc {
+
+    async fn get_attestation(&self, contract_address: Option<Address>) -> RpcResult<Vec<u8>> {
+        // Must be run on sgx-supported machine
+        let mut data = [0u8; 64];
+        
+        // if the contract address is provided, then include
+        // both the signer and contract address in the attestation report
+        if let Some(contract_address) = contract_address {
+            let mut state = STATE.lock().unwrap();
+            if state.contains_key(&contract_address) {
+                let state = state.get_mut(&contract_address).unwrap();
+                let current_signer = state.get_signer_address();
+                // occupies 20 bytes of the first 32 bytes
+                data[..20].copy_from_slice(current_signer.as_slice());
+                // occupies 20 bytes of the last 32 bytes
+                data[32..52].copy_from_slice(contract_address.as_slice());
+            } else {
+                // returns an error for invalid contract address
+                return Err(ErrorObject::from(ErrorCode::InvalidParams));
+            }
+        }
+
+        let attestation = dcap_quote(data).unwrap_or_default();
+        Ok(attestation)
+    }
+
     async fn init_state(&self, contract_address: Address) -> RpcResult<()> {
         // Check if the contract_address is valid
         let contract_address_is_valid = check_contract_state(&contract_address).await;
@@ -53,25 +79,6 @@ impl MyApiServer for MyRpc {
         }
     }
 
-    async fn get_signer_attestation(&self, contract_address: Address) -> RpcResult<Vec<u8>> {
-        let mut state = STATE.lock().unwrap();
-        if state.contains_key(&contract_address) {
-            let state = state.get_mut(&contract_address).unwrap();
-            let current_signer = state.get_signer_address();
-            // pass the signer address as user data in the attestation report
-            // Must be run on sgx-supported machine
-            let mut data = [0u8; 64];
-            // occupies 20 bytes of the first 32 bytes
-            data[..20].copy_from_slice(current_signer.as_slice());
-            // occupies 20 bytes of the last 32 bytes
-            data[32..52].copy_from_slice(contract_address.as_slice());
-            let attestation = dcap_quote(data).unwrap_or_default();
-            Ok(attestation)
-        } else {
-            Err(ErrorObject::from(ErrorCode::InvalidParams))
-        }
-    }
-
     async fn guess_number(
         &self,
         contract_address: Address,
@@ -96,7 +103,7 @@ impl MyApiServer for MyRpc {
                 let winning_message = WinningMessage {
                     round: state.get_current_round(),
                     number: number,
-                    winner_address: user_address.to_string(),
+                    winner_address: user_address,
                 };
 
                 tracing::info!("Winning message: {:?}", winning_message);
