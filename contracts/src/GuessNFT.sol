@@ -11,7 +11,7 @@ contract GuessNFT is ERC721 {
     string constant IMAGE_URI =
         "https://gateway.pinata.cloud/ipfs/bafkreih2oztywvohycvbal33oz2rwub2kcrptbne7eglc44jlueb2rx2gy#x-ipfs-companion-no-redirect";
 
-    constructor() ERC721("GuessNFT", "GNFT") {}
+    constructor(string memory _name, string memory _symbol) ERC721(_name, _symbol) {}
 
     function safeMint(address to, uint256 tokenId) public {
         // check caller is a contract

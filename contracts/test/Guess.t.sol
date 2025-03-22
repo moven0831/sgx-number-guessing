@@ -1,87 +1,94 @@
-// // SPDX-License-Identifier: UNLICENSED
-// pragma solidity ^0.8.13;
+// SPDX-License-Identifier: UNLICENSED
+pragma solidity ^0.8.13;
 
-// import {Test, console} from "forge-std/Test.sol";
-// import {IDcapPortal, DcapPortal} from "@dcap-portal/src/DcapPortal.sol";
-// import {Guess} from "../src/Guess.sol";
-// import {MockDcapAttestation} from "./mock/MockDcapAttestation.sol";
+import {Test, console} from "forge-std/Test.sol";
+import {IDcapPortal, DcapPortal} from "@dcap-portal/src/DcapPortal.sol";
+import {Guess} from "../src/Guess.sol";
+import {GuessNFT} from "../src/GuessNFT.sol";
+import {MockDcapAttestation} from "./mock/MockDcapAttestation.sol";
 
-// contract GuessTest is Test {
-//     address admin = address(0x69);
-//     address user = address(0x01);
+contract GuessTest is Test {
+    address admin = address(0x69);
+    address user = 0x3D089C2f2CB86d4EfDe153C81cAbD4579784430b;
 
-//     Guess guess;
-//     DcapPortal portal;
-//     MockDcapAttestation attestation;
+    Guess guess;
+    GuessNFT nft;
+    DcapPortal portal;
+    MockDcapAttestation attestation;
 
-//     // this doesn't match with the actual values
-//     // these are only for testing
-//     bytes32 mrenclave = 0x2f61414bcfdafa6fa2a1ed578686c59eb74ef1437421576a321c44c19adb4bdf;
-//     bytes32 mrsigner = 0x10e1b8a5255dcd66418e19ddd75db2397f04060af24b1f91ed41ef1b44705ae5;
-//     address signer = 0x81397AF929AA8d9A17785BEA0F373940c99EA5bF;
+    // this doesn't match with the actual values
+    // these are only for testing
+    bytes32 mrenclave = 0x728c3464fd4ea9af8d030f5db8ba6981d3bd823e9c238b7043ba3385d4ff67c0;
+    bytes32 mrsigner = 0x10e1b8a5255dcd66418e19ddd75db2397f04060af24b1f91ed41ef1b44705ae5;
+    address signer = 0xa9132Fd3be679AFfCA06dd091f1b7E3Bd9d539a8;
+    address payable guessAddr = payable(0x8E90261d08f40D84B83BB8461909Ec6Ff9c5F984);
 
-//     function setUp() public {
-//         vm.startPrank(admin);
+    function setUp() public {
+        vm.startPrank(admin);
 
-//         attestation = new MockDcapAttestation();
-//         portal = new DcapPortal();
-//         portal.initialize(admin, address(attestation));
-//         guess = new Guess(address(portal), mrsigner, mrenclave);
+        attestation = new MockDcapAttestation();
 
-//         vm.deal(address(guess), 100 ether);
+        portal = new DcapPortal();
+        portal.initialize(admin, address(attestation));
 
-//         vm.stopPrank();
-//     }
+        nft = new GuessNFT("Test", "TEST");
 
-//     function test_attest_signer() public {
-//         string memory quotePath = string.concat(
-//             vm.projectRoot(),
-//             "/test/sample/quote.bin"
-//         );
-//         bytes memory quote = vm.readFileBinary(quotePath);
+        guess = new Guess(address(portal), mrsigner, mrenclave, address(nft));
 
-//         IDcapPortal.Callback memory callback = IDcapPortal.Callback({
-//             value: 0,
-//             to: address(guess),
-//             params: abi.encodeWithSelector(
-//                 Guess.attestAndSetSigner.selector
-//             )
-//         });
+        // i am going to cheat a little bit here, 
+        // we want the runtime code that we just created
+        // to be assigned to the declared guess address
+        bytes memory runtimeCode = address(guess).code;
+        vm.etch(guessAddr, runtimeCode);
+        // DCAP Portal Address is stored in the contract instead of being an immutable value
+        vm.store(guessAddr, bytes32(uint256(0)), bytes32(uint256(uint160(address(portal)))));
+        guess = Guess(guessAddr);
 
-//         portal.verifyAndAttestOnChain(quote, callback);
+        vm.deal(address(guess), 100 ether);
 
-//         // check signer
-//         address signerFound = guess.signer();
-//         assertEq(signerFound, signer);
-//     }
+        vm.stopPrank();
+    }
 
-//     function test_claim_rewards() public {
-//         // skip attestation
-//         vm.store(
-//             address(guess),
-//             bytes32(uint256(10)),
-//             bytes32(uint256(uint160(signer)))
-//         );
+    function test_attest_signer() public {
+        string memory quotePath = string.concat(
+            vm.projectRoot(),
+            "/test/sample/quote.bin"
+        );
+        bytes memory quote = vm.readFileBinary(quotePath);
 
-//         uint256 userBalanceBefore = user.balance;
-//         uint256 guessBalanceBefore = address(guess).balance;
+        IDcapPortal.Callback memory callback = IDcapPortal.Callback({
+            value: 0,
+            to: address(guess),
+            params: abi.encodeWithSelector(
+                Guess.attestAndSetSigner.selector
+            )
+        });
 
-//         string memory signaturePath = string.concat(
-//             vm.projectRoot(),
-//             "/test/sample/signature.bin"
-//         );
+        portal.verifyAndAttestOnChain(quote, callback);
 
-//         uint64 round = 1;
-//         uint64 winningNumber = 9;
-//         bytes memory signature = vm.readFileBinary(signaturePath);
+        // check signer
+        address signerFound = guess.signer();
+        assertEq(signerFound, signer);
+    }
 
-//         vm.prank(user);
-//         guess.claimReward(round, winningNumber, signature);
+    function test_claim_rewards() public {
+        // skip attestation
+        vm.store(
+            address(guess),
+            bytes32(uint256(10)),
+            bytes32(uint256(uint160(signer)))
+        );
 
-//         uint256 userBalanceAfter = user.balance;
-//         uint256 guessBalanceAfter = address(guess).balance;
+        string memory signaturePath = string.concat(
+            vm.projectRoot(),
+            "/test/sample/signature.bin"
+        );
 
-//         assertEq(userBalanceAfter, userBalanceBefore + 1 ether);
-//         assertEq(guessBalanceAfter, guessBalanceBefore - 1 ether);
-//     }
-// }
+        uint64 round = 1;
+        uint64 winningNumber = 13;
+        bytes memory signature = vm.readFileBinary(signaturePath);
+
+        vm.prank(user);
+        guess.claimReward(round, winningNumber, signature);
+    }
+}

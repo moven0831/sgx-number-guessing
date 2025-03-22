@@ -19,6 +19,9 @@ interface IGuess is IERC165 {
     // d5527477
     // Error thrown when the enclave signer does not match the expected value
     error MRSIGNER_Mismatch();
+    // ad1477d5
+    // Error thrown when the attestation report is not intended for this contract
+    error Contract_Mismatch();
 
     // Event emiited when a new EVM signer is registed to the contract
     event SignerUpdated(address indexed signer);

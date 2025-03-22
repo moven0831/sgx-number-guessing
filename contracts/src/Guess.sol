@@ -65,9 +65,13 @@ contract Guess is ERC165, IGuess, DcapLibCallback {
             revert MRENCLAVE_Mismatch();
         }
 
-        // get the signer address
         bytes memory reportData = _attestationReportUserData(output.tee, output.quoteBody);
-        (bytes32 lower,) = _attestationReportUserDataBytes32(reportData);
+        (bytes32 lower, bytes32 upper) = _attestationReportUserDataBytes32(reportData);
+
+        address extracted = address(bytes20(upper));
+        if (extracted != address(this)) {
+            revert Contract_Mismatch();
+        }
 
         // the first 20 bytes of the report data contains the EVM address corresponds to the
         // private key generated in SGX

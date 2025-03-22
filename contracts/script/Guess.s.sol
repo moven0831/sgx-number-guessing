@@ -13,20 +13,23 @@ contract GuessScript is Script {
     function deployNFT() public {
         vm.startBroadcast(owner);
 
-        GuessNFT nft = new GuessNFT{salt: CREATE2_SALT}();
+        GuessNFT nft = new GuessNFT{salt: CREATE2_SALT}(
+            "TestNFT",
+            "TEST"
+        );
         console.log("NFT Contract deployed at: ", address(nft));
 
         vm.stopBroadcast();
     }
 
-    function deployGuess() public {
+    function deployGuess(address nftAddress) public {
         vm.startBroadcast(owner);
 
         guess = new Guess{salt: CREATE2_SALT}(
             vm.envAddress("DCAP_PORTAL"),
             vm.envBytes32("MR_SIGNER"),
             vm.envBytes32("MR_ENCLAVE"),
-            vm.envAddress("NFT_ADDRESS")
+            nftAddress
         );
 
         console.log("Contract deployed at: ", address(guess));
