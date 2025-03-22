@@ -53,6 +53,7 @@ export function useDcapPortal() {
   }, [walletClient, publicClient, portalAddress])
 
   return {
+    portalAddress,
     verifyAndAttestOnChain,
   }
 }

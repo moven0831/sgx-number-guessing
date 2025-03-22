@@ -1,3 +1,5 @@
+import { AddressLike } from 'ethers'
+
 type ApiCorrectResponse = {
   Correct: {
     messageBytes: Uint8Array
@@ -52,21 +54,31 @@ export class TeeApi {
     return data.result
   }
 
-  async getSignerAddress(): Promise<string> {
-    return this.rpcCall<string>('get_signer_address')
-  }
-
-  async getRound(): Promise<number> {
-    return this.rpcCall<number>('get_round')
-  }
-
-  async getSignerAttestation(): Promise<Uint8Array> {
-    const result = await this.rpcCall<number[]>('get_signer_attestation')
+  async getSignerAttestation(guessAddress?: AddressLike): Promise<Uint8Array> {
+    let params = guessAddress ? [guessAddress] : [];
+    const result = await this.rpcCall<number[]>('get_attestation', params);
     return new Uint8Array(result)
   }
 
-  async guessNumber(userAddress: string, number: number): Promise<GuessResponse> {
-    const result = await this.rpcCall<ApiGuessResponse>('guess_number', [userAddress, number])
+  async initState(guessAddress: AddressLike): Promise<boolean> {
+    try {
+      await this.rpcCall<void>('init_state', [guessAddress])
+      return true
+    } catch (err) {
+      throw new Error("Provided VITE_GUESS_CONTRACT_ADDRESS may not be a valid Guess contract")
+    }
+  }
+
+  async getSignerAddress(guessAddress: AddressLike): Promise<string> {
+    return this.rpcCall<string>('get_signer_address', [guessAddress])
+  }
+
+  async getRound(guessAddress: AddressLike): Promise<number> {
+    return this.rpcCall<number>('get_round', [guessAddress])
+  }
+
+  async guessNumber(guessAddress: AddressLike, userAddress: AddressLike, number: number): Promise<GuessResponse> {
+    const result = await this.rpcCall<ApiGuessResponse>('guess_number', [guessAddress, userAddress, number])
 
     // Transform the response to match our interface
     if (typeof result === 'object' && result.Correct) {
@@ -83,8 +95,8 @@ export class TeeApi {
     return { type: resultType, winningOutput: undefined }
   }
 
-  async rotateKey(): Promise<string> {
-    return this.rpcCall<string>('rotate_key')
+  async rotateKey(guessAddress: AddressLike): Promise<string> {
+    return this.rpcCall<string>('rotate_key', [guessAddress])
   }
 }
 

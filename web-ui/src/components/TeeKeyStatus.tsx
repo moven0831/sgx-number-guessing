@@ -10,7 +10,7 @@ interface TeeKeyStatusProps {
 
 export function TeeKeyStatus({ onRegistrationChange }: TeeKeyStatusProps) {
   const { address } = useAccount()
-  const { checkSignerRegistration } = useGuessContract()
+  const { contractAddress: GuessAddress, checkSignerRegistration } = useGuessContract()
   const { verifyAndAttestOnChain } = useDcapPortal()
   const publicClient = usePublicClient()
   
@@ -24,7 +24,8 @@ export function TeeKeyStatus({ onRegistrationChange }: TeeKeyStatusProps) {
   // Fetch TEE signer address and check registration status
   const fetchTeeStatus = async () => {
     try {
-      const address = await teeApi.getSignerAddress()
+      await teeApi.initState(GuessAddress)
+      const address = await teeApi.getSignerAddress(GuessAddress)
       setTeeAddress(address)
       const registered = await checkSignerRegistration(address)
       setIsRegistered(registered)
@@ -49,7 +50,7 @@ export function TeeKeyStatus({ onRegistrationChange }: TeeKeyStatusProps) {
     
     if (window.confirm(confirmMessage)) {
       try {
-        const newAddress = await teeApi.rotateKey()
+        const newAddress = await teeApi.rotateKey(GuessAddress)
         setTeeAddress(newAddress)
         setIsRegistered(false)
         onRegistrationChange(false)
@@ -68,7 +69,7 @@ export function TeeKeyStatus({ onRegistrationChange }: TeeKeyStatusProps) {
 
     try {
       // Get attestation quote and verify on-chain
-      const quote = await teeApi.getSignerAttestation()
+      const quote = await teeApi.getSignerAttestation(GuessAddress)
       if (quote.byteLength > 0) {
         // once users have the quote, prompt them to save as a binary file
 

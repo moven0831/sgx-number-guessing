@@ -61,6 +61,7 @@ export function useGuessContract() {
   }, [readContract])
 
   return {
+    contractAddress,
     checkSignerRegistration,
     attestAndSetSigner,
     claimReward,

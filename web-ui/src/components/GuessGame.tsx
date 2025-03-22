@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react'
 import { useAccount } from 'wagmi'
 import { teeApi } from '../api/tee'
+import { useGuessContract } from '../hooks/useGuessContract'
 import { TeeKeyStatus } from './TeeKeyStatus'
 import { ClaimReward } from './ClaimReward'
 
 export function GuessGame() {
+  const { contractAddress: GuessAddress } = useGuessContract()
   const { address } = useAccount()
   const [isTeeKeyRegistered, setIsTeeKeyRegistered] = useState(false)
   const [guess, setGuess] = useState('')
@@ -22,7 +24,7 @@ export function GuessGame() {
 
   useEffect(() => {
     if (address) {
-      teeApi.getRound().then(setCurrentRound).catch(console.error)
+      teeApi.getRound(GuessAddress).then(setCurrentRound).catch(console.error)
     }
   }, [address])
 
@@ -35,7 +37,7 @@ export function GuessGame() {
 
     try {
       // Submit guess to TEE
-      const response = await teeApi.guessNumber(address, Number(guess))
+      const response = await teeApi.guessNumber(GuessAddress, address, Number(guess))
       setResult(response)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred while submitting your guess')
@@ -64,7 +66,7 @@ export function GuessGame() {
       const confirmNext = window.confirm('You haven\'t claimed your reward yet. Are you sure you want to proceed to the next round?')
       if (!confirmNext) return
     }
-    const newRound = await teeApi.getRound()
+    const newRound = await teeApi.getRound(GuessAddress)
     setCurrentRound(newRound)
     setGuess('')
     setResult(null)
