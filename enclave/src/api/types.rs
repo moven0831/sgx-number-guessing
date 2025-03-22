@@ -8,6 +8,9 @@ use super::output::GuessResponse;
 // Define the RPC API
 #[rpc(server)]
 pub trait MyApi {
+    #[method(name = "get_attestation")]
+    async fn get_attestation(&self, contract_address: Option<Address>) -> RpcResult<Vec<u8>>;
+
     #[method(name = "init_state")]
     async fn init_state(&self, contract_address: Address) -> RpcResult<()>;
 
@@ -16,9 +19,6 @@ pub trait MyApi {
 
     #[method(name = "get_round")]
     async fn get_round(&self, contract_address: Address) -> RpcResult<u64>;
-
-    #[method(name = "get_signer_attestation")]
-    async fn get_signer_attestation(&self, contract_address: Address) -> RpcResult<Vec<u8>>;
 
     #[method(name = "guess_number")]
     async fn guess_number(&self, contract_address: Address, user_address: Address, number: u64) -> RpcResult<GuessResponse>;
