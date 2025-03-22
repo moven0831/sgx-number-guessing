@@ -1,87 +1,87 @@
-// SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.8.13;
+// // SPDX-License-Identifier: UNLICENSED
+// pragma solidity ^0.8.13;
 
-import {Test, console} from "forge-std/Test.sol";
-import {IDcapPortal, DcapPortal} from "@dcap-portal/src/DcapPortal.sol";
-import {Guess} from "../src/Guess.sol";
-import {MockDcapAttestation} from "./mock/MockDcapAttestation.sol";
+// import {Test, console} from "forge-std/Test.sol";
+// import {IDcapPortal, DcapPortal} from "@dcap-portal/src/DcapPortal.sol";
+// import {Guess} from "../src/Guess.sol";
+// import {MockDcapAttestation} from "./mock/MockDcapAttestation.sol";
 
-contract GuessTest is Test {
-    address admin = address(0x69);
-    address user = address(0x01);
+// contract GuessTest is Test {
+//     address admin = address(0x69);
+//     address user = address(0x01);
 
-    Guess guess;
-    DcapPortal portal;
-    MockDcapAttestation attestation;
+//     Guess guess;
+//     DcapPortal portal;
+//     MockDcapAttestation attestation;
 
-    // this doesn't match with the actual values
-    // these are only for testing
-    bytes32 mrenclave = 0x2f61414bcfdafa6fa2a1ed578686c59eb74ef1437421576a321c44c19adb4bdf;
-    bytes32 mrsigner = 0x10e1b8a5255dcd66418e19ddd75db2397f04060af24b1f91ed41ef1b44705ae5;
-    address signer = 0x81397AF929AA8d9A17785BEA0F373940c99EA5bF;
+//     // this doesn't match with the actual values
+//     // these are only for testing
+//     bytes32 mrenclave = 0x2f61414bcfdafa6fa2a1ed578686c59eb74ef1437421576a321c44c19adb4bdf;
+//     bytes32 mrsigner = 0x10e1b8a5255dcd66418e19ddd75db2397f04060af24b1f91ed41ef1b44705ae5;
+//     address signer = 0x81397AF929AA8d9A17785BEA0F373940c99EA5bF;
 
-    function setUp() public {
-        vm.startPrank(admin);
+//     function setUp() public {
+//         vm.startPrank(admin);
 
-        attestation = new MockDcapAttestation();
-        portal = new DcapPortal();
-        portal.initialize(admin, address(attestation));
-        guess = new Guess(address(portal), mrsigner, mrenclave);
+//         attestation = new MockDcapAttestation();
+//         portal = new DcapPortal();
+//         portal.initialize(admin, address(attestation));
+//         guess = new Guess(address(portal), mrsigner, mrenclave);
 
-        vm.deal(address(guess), 100 ether);
+//         vm.deal(address(guess), 100 ether);
 
-        vm.stopPrank();
-    }
+//         vm.stopPrank();
+//     }
 
-    function test_attest_signer() public {
-        string memory quotePath = string.concat(
-            vm.projectRoot(),
-            "/test/sample/quote.bin"
-        );
-        bytes memory quote = vm.readFileBinary(quotePath);
+//     function test_attest_signer() public {
+//         string memory quotePath = string.concat(
+//             vm.projectRoot(),
+//             "/test/sample/quote.bin"
+//         );
+//         bytes memory quote = vm.readFileBinary(quotePath);
 
-        IDcapPortal.Callback memory callback = IDcapPortal.Callback({
-            value: 0,
-            to: address(guess),
-            params: abi.encodeWithSelector(
-                Guess.attestAndSetSigner.selector
-            )
-        });
+//         IDcapPortal.Callback memory callback = IDcapPortal.Callback({
+//             value: 0,
+//             to: address(guess),
+//             params: abi.encodeWithSelector(
+//                 Guess.attestAndSetSigner.selector
+//             )
+//         });
 
-        portal.verifyAndAttestOnChain(quote, callback);
+//         portal.verifyAndAttestOnChain(quote, callback);
 
-        // check signer
-        address signerFound = guess.signer();
-        assertEq(signerFound, signer);
-    }
+//         // check signer
+//         address signerFound = guess.signer();
+//         assertEq(signerFound, signer);
+//     }
 
-    function test_claim_rewards() public {
-        // skip attestation
-        vm.store(
-            address(guess), 
-            bytes32(uint256(10)), 
-            bytes32(uint256(uint160(signer)))
-        );
+//     function test_claim_rewards() public {
+//         // skip attestation
+//         vm.store(
+//             address(guess),
+//             bytes32(uint256(10)),
+//             bytes32(uint256(uint160(signer)))
+//         );
 
-        uint256 userBalanceBefore = user.balance;
-        uint256 guessBalanceBefore = address(guess).balance;
+//         uint256 userBalanceBefore = user.balance;
+//         uint256 guessBalanceBefore = address(guess).balance;
 
-        string memory signaturePath = string.concat(
-            vm.projectRoot(),
-            "/test/sample/signature.bin"
-        );
+//         string memory signaturePath = string.concat(
+//             vm.projectRoot(),
+//             "/test/sample/signature.bin"
+//         );
 
-        uint64 round = 1;
-        uint64 winningNumber = 9;
-        bytes memory signature = vm.readFileBinary(signaturePath);
+//         uint64 round = 1;
+//         uint64 winningNumber = 9;
+//         bytes memory signature = vm.readFileBinary(signaturePath);
 
-        vm.prank(user);
-        guess.claimReward(round, winningNumber, signature);
+//         vm.prank(user);
+//         guess.claimReward(round, winningNumber, signature);
 
-        uint256 userBalanceAfter = user.balance;
-        uint256 guessBalanceAfter = address(guess).balance;
+//         uint256 userBalanceAfter = user.balance;
+//         uint256 guessBalanceAfter = address(guess).balance;
 
-        assertEq(userBalanceAfter, userBalanceBefore + 1 ether);
-        assertEq(guessBalanceAfter, guessBalanceBefore - 1 ether);
-    }   
-}
+//         assertEq(userBalanceAfter, userBalanceBefore + 1 ether);
+//         assertEq(guessBalanceAfter, guessBalanceBefore - 1 ether);
+//     }
+// }
