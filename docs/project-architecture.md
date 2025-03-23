@@ -11,6 +11,10 @@ sequenceDiagram
 
     User->>WebApp: Connects Wallet
 
+    note over User: Provides their contract address to initiate a session (first-time users only)
+    User->>TEE Server: init_state(guess_contract_address)
+    TEE Server->>User: OK
+
     note over User: Requests the EVM address of the empheral key
     WebApp->>TEE Server: get_signer_address()
     TEE Server->>User: returns EVM address
@@ -60,12 +64,14 @@ sequenceDiagram
 sequenceDiagram
     participant User
     participant Guess Contract
+    participant GuessNFT Contract
 
     note over User: Submits the TEE Signed message
     User->>Guess Contract: claimReward(round, number, signature)
     Guess Contract->>Guess Contract: Re-constructs the message and verifies signature
     alt Valid Signature
-        Guess Contract->>User: Rewards the user (TBD)
+        Guess Contract->>GuessNFT Contract: safeMint()
+        GuessNFT->>User: Mints an NFT to the winning user
     else Invalid Signature
         Guess Contract->>User: Reverts with Invalid_Enclave_Signature()\
     end
