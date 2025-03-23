@@ -65,7 +65,7 @@ export class TeeApi {
       await this.rpcCall<void>('init_state', [guessAddress])
       return true
     } catch (err) {
-      throw new Error("Provided VITE_GUESS_CONTRACT_ADDRESS may not be a valid Guess contract")
+      throw new Error("Failed to initiate TEE session. You may have provided an invalid VITE_GUESS_CONTRACT_ADDRESS")
     }
   }
 

@@ -23,10 +23,10 @@ export function GuessGame() {
   const [rewardClaimed, setRewardClaimed] = useState(false)
 
   useEffect(() => {
-    if (address) {
+    if (isTeeKeyRegistered) {
       teeApi.getRound(GuessAddress).then(setCurrentRound).catch(console.error)
     }
-  }, [address])
+  }, [isTeeKeyRegistered])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -36,7 +36,6 @@ export function GuessGame() {
     setIsSubmitting(true)
 
     try {
-      // Submit guess to TEE
       const response = await teeApi.guessNumber(GuessAddress, address, Number(guess))
       setResult(response)
     } catch (err) {
@@ -162,12 +161,12 @@ export function GuessGame() {
             </div>
         )}
   
-        {result && result.type === 'Correct' && result.winningOutput && currentRound && (
+        {result && result.type === 'Correct' && (
           <div className="space-y-6">
             <ClaimReward
-              round={currentRound}
+              round={currentRound!}
               winningNumber={Number(guess)}
-              signature={result.winningOutput.signature}
+              signature={result.winningOutput!.signature}
               onClaimStateChange={setRewardClaimed}
             />
 
