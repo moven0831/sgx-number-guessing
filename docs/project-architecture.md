@@ -71,7 +71,7 @@ sequenceDiagram
     Guess Contract->>Guess Contract: Re-constructs the message and verifies signature
     alt Valid Signature
         Guess Contract->>GuessNFT Contract: safeMint()
-        GuessNFT->>User: Mints an NFT to the winning user
+        GuessNFT Contract->>User: Mints an NFT to the winning user
     else Invalid Signature
         Guess Contract->>User: Reverts with Invalid_Enclave_Signature()\
     end
