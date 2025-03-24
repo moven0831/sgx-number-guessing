@@ -1,0 +1,35 @@
+[workspace]
+resolver = "2"
+members = ["app", "enclave"]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+authors = ["Automata Team"]
+homepage = "https://www.ata.network/"
+
+[workspace.dependencies]
+automata-sgx-sdk = { git = "https://github.com/automata-network/automata-sgx-sdk", branch = "main" }
+automata-build-script = { git = "https://github.com/automata-network/automata-sgx-sdk", branch = "main" }
+
+# Use external libraries in the enclave
+serde = { version = "1" }
+serde_json = { version = "1" }
+async-trait = { version = "0.1.87" }
+jsonrpsee = { version = "0.24.8" }
+tokio = { version = "1.44.0" }
+alloy = { version = "0.2", default-features = false }
+rand = { version = "=0.8.5" }
+lazy_static = { version = "1.5.0" }
+tracing = { version = "0.1.41" }
+tracing-subscriber = { version = "0.3.19" }
+base = { git = "https://github.com/automata-network/base-rs.git" }
+tower = { version = "=0.4.13" }
+tower-http = { version = "0.5.2" }
+hyper = { version = "1.3" }
+cpufeatures = "=0.2.14"
+ring = "=0.17.8"
+
+[patch.crates-io]
+ring = { git = "https://github.com/automata-network/ring-sgx" }
+cpufeatures = { git = "https://github.com/automata-network/RustCrypto-utils-ass", branch = "cpufeatures-v0.2.14" }

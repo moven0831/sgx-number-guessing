@@ -1,0 +1,4 @@
+/target
+/app/sgx/private.pem
+**/node_modules
+**/.DS_Store
