@@ -8,6 +8,8 @@ In this workshop, you will learn about:
 - The structure of the Attestation Output that is returned by the Automata DCAP Attestation upon successful DCAP Quote verification, which yields useful information about the quote, such as the TCB Status, TCB Advisory ID, FMSPC, ISV Enclave Report etc.
 - The structure of the ISV Enclave Report, this is needed to extract `MRSIGNER`, `MRENCLAVE` and the report data.
 
+Refer to the [`demo`](https://github.com/preston4896/sgx-guess/blob/demo/contracts/src/Guess.sol) branch for a complete example of `Guess.sol`.
+
 Once you have fully implemented `Guess.sol`, run the command to compile the contract:
 
 ```
