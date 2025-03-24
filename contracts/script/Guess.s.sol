@@ -10,12 +10,13 @@ contract GuessScript is Script {
     address owner = vm.envAddress("OWNER");
     bytes32 CREATE2_SALT = keccak256(bytes("SGX_GUESS"));
 
-    function deployNFT() public {
+    function deployNFT(string memory name, string memory symbol, string memory imageUri) public {
         vm.startBroadcast(owner);
 
         GuessNFT nft = new GuessNFT{salt: CREATE2_SALT}(
-            "TestNFT",
-            "TEST"
+            name,
+            symbol,
+            imageUri
         );
         console.log("NFT Contract deployed at: ", address(nft));
 

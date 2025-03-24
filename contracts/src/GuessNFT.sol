@@ -8,10 +8,11 @@ import {Base64} from "@openzeppelin/contracts/utils/Base64.sol";
 import {IGuess} from "./interfaces/IGuess.sol";
 
 contract GuessNFT is ERC721 {
-    string constant IMAGE_URI =
-        "https://gateway.pinata.cloud/ipfs/bafkreih2oztywvohycvbal33oz2rwub2kcrptbne7eglc44jlueb2rx2gy#x-ipfs-companion-no-redirect";
+    string IMAGE_URI;
 
-    constructor(string memory _name, string memory _symbol) ERC721(_name, _symbol) {}
+    constructor(string memory _name, string memory _symbol, string memory imageUri) ERC721(_name, _symbol) {
+        IMAGE_URI = imageUri;
+    }
 
     function safeMint(address to, uint256 tokenId) public {
         // check caller is a contract
@@ -47,7 +48,7 @@ contract GuessNFT is ERC721 {
         );
     }
 
-    function _generateSvg(string memory tokenIdString, address owner) private pure returns (string memory) {
+    function _generateSvg(string memory tokenIdString, address owner) private view returns (string memory) {
         return string(
             abi.encodePacked(
                 '<svg width="800" height="800" viewBox="0 0 800 800" xmlns="http://www.w3.org/2000/svg">',

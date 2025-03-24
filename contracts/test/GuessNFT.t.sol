@@ -14,7 +14,7 @@ contract GuessNFTTest is Test {
     address user = 0x1234567890123456789012345678901234567890;
 
     function setUp() public {
-        nft = new GuessNFT("Test", "TEST");
+        nft = new GuessNFT("Test", "TEST", "");
         guess = new MockGuess(address(nft));
     }
 

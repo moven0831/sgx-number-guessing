@@ -31,7 +31,7 @@ contract GuessTest is Test {
         portal = new DcapPortal();
         portal.initialize(admin, address(attestation));
 
-        nft = new GuessNFT("Test", "TEST");
+        nft = new GuessNFT("Test", "TEST", "");
 
         guess = new Guess(address(portal), mrsigner, mrenclave, address(nft));
 
