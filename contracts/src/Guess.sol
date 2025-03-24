@@ -36,8 +36,6 @@ contract Guess is ERC165, IGuess, DcapLibCallback {
         nft = IGuessNFT(_nft);
     }
 
-    receive() external payable {}
-
     function attestAndSetSigner() external override fromDcapPortal {
         bytes memory attestationOutput = _attestationOutput();
 
