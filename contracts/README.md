@@ -1,66 +1,47 @@
-## Foundry
+# Guess Game Contracts
 
-**Foundry is a blazing fast, portable and modular toolkit for Ethereum application development written in Rust.**
+Before you begin, make sure you install [Foundry](https://book.getfoundry.sh/getting-started/installation).
 
-Foundry consists of:
+This branch provides the complete implementation of `Guess.sol`, to try out building your own implementation, check out to the [`workshop`](https://github.com/preston4896/sgx-guess/blob/workshop/contracts/src/Guess.sol) branch.
 
--   **Forge**: Ethereum testing framework (like Truffle, Hardhat and DappTools).
--   **Cast**: Swiss army knife for interacting with EVM smart contracts, sending transactions and getting chain data.
--   **Anvil**: Local Ethereum node, akin to Ganache, Hardhat Network.
--   **Chisel**: Fast, utilitarian, and verbose solidity REPL.
+---
 
-## Documentation
+Compile the contract:
 
-https://book.getfoundry.sh/
-
-## Usage
-
-### Build
-
-```shell
-$ forge build
+```
+forge build
 ```
 
-### Test
+Test the contract:
 
-```shell
-$ forge test
+```
+forge test
 ```
 
-### Format
+Then finally, perform the following steps to deploy the contract.
 
-```shell
-$ forge fmt
+Step 1: Configure keystore
+
+> ℹ️ **NOTE**: Click [here](https://www.l2faucet.com/) to request ATA testnet tokens.
+
+```bash
+cast wallet import -k keystore DEPLOYER --interactive
 ```
 
-### Gas Snapshots
+Step 2: Create `.env` using the provided example
 
-```shell
-$ forge snapshot
+```bash
+cp .example.env .env
 ```
 
-### Anvil
+Step 3: Fill in missing `env` values, then source it
 
-```shell
-$ anvil
+```bash
+source .env
 ```
 
-### Deploy
+Step 4: Run the deployment script
 
-```shell
-$ forge script script/Counter.s.sol:CounterScript --rpc-url <your_rpc_url> --private-key <your_private_key>
-```
-
-### Cast
-
-```shell
-$ cast <subcommand>
-```
-
-### Help
-
-```shell
-$ forge --help
-$ anvil --help
-$ cast --help
+```bash
+forge script GuessScript --rpc-url $RPC_URL --keystore keystore/DEPLOYER -vvvv --broadcast --sig "deployGuess(address)" <NFT_ADDRESS>
 ```
