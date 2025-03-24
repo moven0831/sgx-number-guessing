@@ -1,66 +1,49 @@
-## Foundry
+# Guess Game Contracts
 
-**Foundry is a blazing fast, portable and modular toolkit for Ethereum application development written in Rust.**
+In this workshop, you will learn about:
 
-Foundry consists of:
+- Automata DCAP Portal contract, can be found in the [Automata DCAP SDK](https://github.com/automata-network/dcap-sd) repo.
+- Integrate `Guess.sol` with Automata DCAP Portal by importing the `DcapLibCallback` library.
+- Guard functions to require a valid DCAP Quote, using `fromDcapPortal` modifier.
+- The structure of the Attestation Output that is returned by the Automata DCAP Attestation upon successful DCAP Quote verification, which yields useful information about the quote, such as the TCB Status, TCB Advisory ID, FMSPC, ISV Enclave Report etc.
+- The structure of the ISV Enclave Report, this is needed to extract `MRSIGNER`, `MRENCLAVE` and the report data.
 
--   **Forge**: Ethereum testing framework (like Truffle, Hardhat and DappTools).
--   **Cast**: Swiss army knife for interacting with EVM smart contracts, sending transactions and getting chain data.
--   **Anvil**: Local Ethereum node, akin to Ganache, Hardhat Network.
--   **Chisel**: Fast, utilitarian, and verbose solidity REPL.
+Once you have fully implemented `Guess.sol`, run the command to compile the contract:
 
-## Documentation
-
-https://book.getfoundry.sh/
-
-## Usage
-
-### Build
-
-```shell
-$ forge build
+```
+forge build
 ```
 
-### Test
+Test the contract:
 
-```shell
-$ forge test
+```
+forge test
 ```
 
-### Format
+Then finally, perform the following steps to deploy the contract.
 
-```shell
-$ forge fmt
+Step 1: Configure keystore
+
+> ℹ️ **NOTE**: Click [here](https://www.l2faucet.com/) to request ATA testnet tokens.
+
+```bash
+cast wallet import -k keystore DEPLOYER --interactive
 ```
 
-### Gas Snapshots
+Step 2: Create `.env` using the provided example
 
-```shell
-$ forge snapshot
+```bash
+cp .example.env .env
 ```
 
-### Anvil
+Step 3: Fill in missing `env` values, then source it
 
-```shell
-$ anvil
+```bash
+source .env
 ```
 
-### Deploy
+Step 4: Run the deployment script
 
-```shell
-$ forge script script/Counter.s.sol:CounterScript --rpc-url <your_rpc_url> --private-key <your_private_key>
-```
-
-### Cast
-
-```shell
-$ cast <subcommand>
-```
-
-### Help
-
-```shell
-$ forge --help
-$ anvil --help
-$ cast --help
+```bash
+forge script GuessScript --rpc-url $RPC_URL --keystore keystore/DEPLOYER -vvvv --broadcast --sig "deployGuess(address)" <NFT_ADDRESS>
 ```
