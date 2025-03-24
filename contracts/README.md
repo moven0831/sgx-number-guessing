@@ -1,5 +1,7 @@
 # Guess Game Contracts
 
+Before you begin, make sure you install [Foundry](https://book.getfoundry.sh/getting-started/installation).
+
 In this workshop, you will learn about:
 
 - Automata DCAP Portal contract, can be found in the [Automata DCAP SDK](https://github.com/automata-network/dcap-sd) repo.
