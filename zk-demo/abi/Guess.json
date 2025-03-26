@@ -1,0 +1,322 @@
+[
+    {
+        "type": "constructor",
+        "inputs": [
+            {
+                "name": "_dcapPortal",
+                "type": "address",
+                "internalType": "address"
+            },
+            {
+                "name": "_mrsigner",
+                "type": "bytes32",
+                "internalType": "bytes32"
+            },
+            {
+                "name": "_mrEnclave",
+                "type": "bytes32",
+                "internalType": "bytes32"
+            },
+            {
+                "name": "_nft",
+                "type": "address",
+                "internalType": "address"
+            }
+        ],
+        "stateMutability": "nonpayable"
+    },
+    {
+        "type": "function",
+        "name": "attestAndSetSigner",
+        "inputs": [],
+        "outputs": [],
+        "stateMutability": "nonpayable"
+    },
+    {
+        "type": "function",
+        "name": "claimReward",
+        "inputs": [
+            {
+                "name": "round",
+                "type": "uint64",
+                "internalType": "uint64"
+            },
+            {
+                "name": "winningNumber",
+                "type": "uint64",
+                "internalType": "uint64"
+            },
+            {
+                "name": "signature",
+                "type": "bytes",
+                "internalType": "bytes"
+            }
+        ],
+        "outputs": [],
+        "stateMutability": "nonpayable"
+    },
+    {
+        "type": "function",
+        "name": "mrEnclave",
+        "inputs": [],
+        "outputs": [
+            {
+                "name": "",
+                "type": "bytes32",
+                "internalType": "bytes32"
+            }
+        ],
+        "stateMutability": "view"
+    },
+    {
+        "type": "function",
+        "name": "mrSigner",
+        "inputs": [],
+        "outputs": [
+            {
+                "name": "",
+                "type": "bytes32",
+                "internalType": "bytes32"
+            }
+        ],
+        "stateMutability": "view"
+    },
+    {
+        "type": "function",
+        "name": "nft",
+        "inputs": [],
+        "outputs": [
+            {
+                "name": "",
+                "type": "address",
+                "internalType": "contract IGuessNFT"
+            }
+        ],
+        "stateMutability": "view"
+    },
+    {
+        "type": "function",
+        "name": "nonce",
+        "inputs": [],
+        "outputs": [
+            {
+                "name": "",
+                "type": "uint64",
+                "internalType": "uint64"
+            }
+        ],
+        "stateMutability": "view"
+    },
+    {
+        "type": "function",
+        "name": "signer",
+        "inputs": [],
+        "outputs": [
+            {
+                "name": "",
+                "type": "address",
+                "internalType": "address"
+            }
+        ],
+        "stateMutability": "view"
+    },
+    {
+        "type": "function",
+        "name": "supportsInterface",
+        "inputs": [
+            {
+                "name": "interfaceId",
+                "type": "bytes4",
+                "internalType": "bytes4"
+            }
+        ],
+        "outputs": [
+            {
+                "name": "",
+                "type": "bool",
+                "internalType": "bool"
+            }
+        ],
+        "stateMutability": "view"
+    },
+    {
+        "type": "event",
+        "name": "RewardClaimed",
+        "inputs": [
+            {
+                "name": "winner",
+                "type": "address",
+                "indexed": true,
+                "internalType": "address"
+            },
+            {
+                "name": "round",
+                "type": "uint64",
+                "indexed": true,
+                "internalType": "uint64"
+            },
+            {
+                "name": "guess",
+                "type": "uint64",
+                "indexed": false,
+                "internalType": "uint64"
+            }
+        ],
+        "anonymous": false
+    },
+    {
+        "type": "event",
+        "name": "SignerUpdated",
+        "inputs": [
+            {
+                "name": "signer",
+                "type": "address",
+                "indexed": true,
+                "internalType": "address"
+            }
+        ],
+        "anonymous": false
+    },
+    {
+        "type": "error",
+        "name": "CALLER_NOT_DCAP_PORTAL",
+        "inputs": []
+    },
+    {
+        "type": "error",
+        "name": "Contract_Mismatch",
+        "inputs": []
+    },
+    {
+        "type": "error",
+        "name": "ECDSAInvalidSignature",
+        "inputs": []
+    },
+    {
+        "type": "error",
+        "name": "ECDSAInvalidSignatureLength",
+        "inputs": [
+            {
+                "name": "length",
+                "type": "uint256",
+                "internalType": "uint256"
+            }
+        ]
+    },
+    {
+        "type": "error",
+        "name": "ECDSAInvalidSignatureS",
+        "inputs": [
+            {
+                "name": "s",
+                "type": "bytes32",
+                "internalType": "bytes32"
+            }
+        ]
+    },
+    {
+        "type": "error",
+        "name": "INVALID_ATTESTATION_OUTPUT",
+        "inputs": []
+    },
+    {
+        "type": "error",
+        "name": "INVALID_ATTESTATION_TEE",
+        "inputs": [
+            {
+                "name": "tee",
+                "type": "bytes4",
+                "internalType": "bytes4"
+            }
+        ]
+    },
+    {
+        "type": "error",
+        "name": "INVALID_BLOCKHASH",
+        "inputs": [
+            {
+                "name": "want",
+                "type": "bytes32",
+                "internalType": "bytes32"
+            },
+            {
+                "name": "got",
+                "type": "bytes32",
+                "internalType": "bytes32"
+            },
+            {
+                "name": "number",
+                "type": "uint256",
+                "internalType": "uint256"
+            }
+        ]
+    },
+    {
+        "type": "error",
+        "name": "INVALID_BLOCKNUMBER",
+        "inputs": [
+            {
+                "name": "current",
+                "type": "uint256",
+                "internalType": "uint256"
+            },
+            {
+                "name": "got",
+                "type": "uint256",
+                "internalType": "uint256"
+            }
+        ]
+    },
+    {
+        "type": "error",
+        "name": "Invalid_Enclave_Signature",
+        "inputs": []
+    },
+    {
+        "type": "error",
+        "name": "Invalid_Quote_Body",
+        "inputs": []
+    },
+    {
+        "type": "error",
+        "name": "MAGIC_NUMBER_MISMATCH",
+        "inputs": []
+    },
+    {
+        "type": "error",
+        "name": "MRENCLAVE_Mismatch",
+        "inputs": []
+    },
+    {
+        "type": "error",
+        "name": "MRSIGNER_Mismatch",
+        "inputs": []
+    },
+    {
+        "type": "error",
+        "name": "ORIGIN_NOT_ALLOWED",
+        "inputs": [
+            {
+                "name": "",
+                "type": "address",
+                "internalType": "address"
+            }
+        ]
+    },
+    {
+        "type": "error",
+        "name": "SGX_Only",
+        "inputs": []
+    },
+    {
+        "type": "error",
+        "name": "UNKNOWN_VERSION",
+        "inputs": [
+            {
+                "name": "",
+                "type": "uint8",
+                "internalType": "uint8"
+            }
+        ]
+    }
+]
