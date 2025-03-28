@@ -4,8 +4,6 @@ import { usePublicClient } from 'wagmi'
 import { useGuessContract } from '../hooks/useGuessContract'
 import guessNFTAbi from '../abi/GuessNFT.json'
 
-const NFT_CONTRACT_ADDRESS = '0xef43fd7cfe8125683978c131b988dcf7d4344530'
-
 interface ClaimRewardProps {
   round: number
   winningNumber: number
@@ -14,6 +12,11 @@ interface ClaimRewardProps {
 }
 
 export function ClaimReward({ round, winningNumber, signature, onClaimStateChange }: ClaimRewardProps) {
+  const NFT_CONTRACT_ADDRESS = import.meta.env.VITE_NFT_CONTRACT_ADDRESS;
+  if (!NFT_CONTRACT_ADDRESS) {
+    throw new Error('VITE_NFT_CONTRACT_ADDRESS not set')
+  }
+  
   const { claimReward } = useGuessContract()
   const [isClaiming, setIsClaiming] = useState(false)
   const [error, setError] = useState<string | null>(null)
