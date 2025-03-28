@@ -1,10 +1,9 @@
 use alloy::primitives::Address;
+use dashmap::DashMap;
 use lazy_static::lazy_static;
-use std::collections::HashMap;
-use std::sync::Mutex;
 
 lazy_static! {
-    pub static ref STATE: Mutex<HashMap<Address, State>> = Mutex::new(HashMap::new());
+    pub static ref STATE: DashMap<Address, State> = DashMap::new();
 }
 
 use base::eth::Keypair;

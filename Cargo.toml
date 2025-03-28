@@ -11,6 +11,7 @@ homepage = "https://www.ata.network/"
 [workspace.dependencies]
 automata-sgx-sdk = { git = "https://github.com/automata-network/automata-sgx-sdk", branch = "main" }
 automata-build-script = { git = "https://github.com/automata-network/automata-sgx-sdk", branch = "main" }
+dashmap = { version = "5.5.3" }
 
 # Use external libraries in the enclave
 serde = { version = "1" }

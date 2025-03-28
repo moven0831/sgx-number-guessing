@@ -39,7 +39,10 @@ pub async fn check_contract_interface(guess_address: &Address) -> bool {
     };
     let ret = client
         .call(guess_address.clone(), &supports_interface_call)
-        .await
-        .unwrap();
-    ret._0
+        .await;
+    if let Ok(ret) = ret {
+        ret._0
+    } else {
+        false
+    }
 }

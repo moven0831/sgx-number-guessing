@@ -1183,6 +1183,7 @@ dependencies = [
  "automata-sgx-sdk",
  "base",
  "cpufeatures",
+ "dashmap",
  "hyper",
  "jsonrpsee",
  "lazy_static",
