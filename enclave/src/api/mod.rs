@@ -26,10 +26,8 @@ impl MyApiServer for MyRpc {
         // if the contract address is provided, then include
         // both the signer and contract address in the attestation report
         if let Some(contract_address) = contract_address {
-            let mut state = STATE.lock().unwrap();
-            if state.contains_key(&contract_address) {
-                let state = state.get_mut(&contract_address).unwrap();
-                let current_signer = state.get_signer_address();
+            if let Some(state_ref) = STATE.get(&contract_address) {
+                let current_signer = state_ref.get_signer_address();
                 // occupies 20 bytes of the first 32 bytes
                 data[..20].copy_from_slice(current_signer.as_slice());
                 // occupies 20 bytes of the last 32 bytes
@@ -51,29 +49,23 @@ impl MyApiServer for MyRpc {
             return Err(ErrorObject::from(ErrorCode::InvalidParams));
         }
 
-        let mut state = STATE.lock().unwrap();
-        if !state.contains_key(&contract_address) {
-            state.insert(contract_address, State::new());
-        }
+        // Using entry API to insert only if the key doesn't exist
+        STATE.entry(contract_address).or_insert(State::new());
 
         Ok(())
     }
 
     async fn get_signer_address(&self, contract_address: Address) -> RpcResult<String> {
-        let state = STATE.lock().unwrap();
-        if state.contains_key(&contract_address) {
-            let state = state.get(&contract_address).unwrap();
-            Ok(state.get_signer_address().to_string())
+        if let Some(state_ref) = STATE.get(&contract_address) {
+            Ok(state_ref.get_signer_address().to_string())
         } else {
             Err(ErrorObject::from(ErrorCode::InvalidParams))
         }
     }
 
     async fn get_round(&self, contract_address: Address) -> RpcResult<u64> {
-        let state = STATE.lock().unwrap();
-        if state.contains_key(&contract_address) {
-            let state = state.get(&contract_address).unwrap();
-            Ok(state.get_current_round())
+        if let Some(state_ref) = STATE.get(&contract_address) {
+            Ok(state_ref.get_current_round())
         } else {
             Err(ErrorObject::from(ErrorCode::InvalidParams))
         }
@@ -95,13 +87,11 @@ impl MyApiServer for MyRpc {
             return Err(ErrorObject::from(ErrorCode::InvalidParams));
         }
 
-        let mut state = STATE.lock().unwrap();
-        if state.contains_key(&contract_address) {
-            let state = state.get_mut(&contract_address).unwrap();
-            let guessed = state.guess_number(number);
+        if let Some(mut state_ref) = STATE.get_mut(&contract_address) {
+            let guessed = state_ref.guess_number(number);
             if guessed {
                 let winning_message = WinningMessage {
-                    round: state.get_current_round(),
+                    round: state_ref.get_current_round(),
                     number: number,
                     winner_address: user_address,
                 };
@@ -116,8 +106,8 @@ impl MyApiServer for MyRpc {
 
                 tracing::info!("digest: {}", digest);
 
-                let signature = state.sign(digest);
-                state.new_round();
+                let signature = state_ref.sign(digest);
+                state_ref.new_round();
 
                 tracing::info!("signautre: {:?}", signature);
 
@@ -126,7 +116,7 @@ impl MyApiServer for MyRpc {
                     signature: signature.to_vec(),
                 }))
             } else {
-                let current_number = state.get_current_round_number();
+                let current_number = state_ref.get_current_round_number();
                 if number > current_number {
                     Ok(GuessResponse::TooHigh)
                 } else {
@@ -139,11 +129,9 @@ impl MyApiServer for MyRpc {
     }
 
     async fn rotate_key(&self, contract_address: Address) -> RpcResult<String> {
-        let mut state = STATE.lock().unwrap();
-        if state.contains_key(&contract_address) {
-            let state = state.get_mut(&contract_address).unwrap();
-            state.rotate_key();
-            Ok(state.get_signer_address().to_string())
+        if let Some(mut state_ref) = STATE.get_mut(&contract_address) {
+            state_ref.rotate_key();
+            Ok(state_ref.get_signer_address().to_string())
         } else {
             Err(ErrorObject::from(ErrorCode::InvalidParams))
         }
