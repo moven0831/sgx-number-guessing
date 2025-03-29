@@ -31,40 +31,6 @@ contract GuessNFT is ERC721 {
     function tokenURI(uint256 tokenId) public view override returns (string memory) {
         _requireOwned(tokenId);
 
-        string memory tokenIdString = Strings.toString(tokenId);
-        address owner = ownerOf(tokenId);
-
-        string memory svg = _generateSvg(tokenIdString, owner);
-
-        return string(
-            abi.encodePacked(
-                '{"name": "GuessNFT #',
-                tokenIdString,
-                '", "description": "GuessNFT is a collection of unique NFTs.",',
-                '"image": "data:image/svg+xml;base64,',
-                Base64.encode(bytes(svg)),
-                '"}'
-            )
-        );
-    }
-
-    function _generateSvg(string memory tokenIdString, address owner) private view returns (string memory) {
-        return string(
-            abi.encodePacked(
-                '<svg width="800" height="800" viewBox="0 0 800 800" xmlns="http://www.w3.org/2000/svg">',
-                '<image href="',
-                IMAGE_URI,
-                '" x="0" y="0" width="720" height="730"/>',
-                '<text x="50%" y="750" font-size="24" fill="black" text-anchor="middle" font-family="Arial">',
-                "ID: #",
-                tokenIdString,
-                "</text>",
-                '<text x="50%" y="775" font-size="20" fill="black" text-anchor="middle" font-family="Arial">',
-                "Holder: ",
-                Strings.toHexString(owner),
-                "</text>",
-                "</svg>"
-            )
-        );
+        return IMAGE_URI;
     }
 }
