@@ -11,6 +11,8 @@ interface ClaimRewardProps {
   onClaimStateChange?: (claimed: boolean) => void
 }
 
+const IPFS_GATEWAY_BASE_URL = "https://gateway.pinata.cloud/ipfs/"
+
 export function ClaimReward({ round, winningNumber, signature, onClaimStateChange }: ClaimRewardProps) {
   const NFT_CONTRACT_ADDRESS = import.meta.env.VITE_NFT_CONTRACT_ADDRESS;
   if (!NFT_CONTRACT_ADDRESS) {
@@ -22,7 +24,7 @@ export function ClaimReward({ round, winningNumber, signature, onClaimStateChang
   const [error, setError] = useState<string | null>(null)
   const [claimed, setClaimed] = useState(false)
   const [tokenId, setTokenId] = useState<BytesLike | null>(null)
-  const [nftMetadata, setNftMetadata] = useState<{ name: string; image: string, description: string } | null>(null)
+  const [nftMetadata, setNftMetadata] = useState<string | null>(null)
 
   const publicClient = usePublicClient()
   
@@ -35,16 +37,8 @@ export function ClaimReward({ round, winningNumber, signature, onClaimStateChang
         abi: guessNFTAbi,
         functionName: 'tokenURI',
         args: [id],
-      })
-      
-      if (tokenURI) {
-        try {
-          const metadata = JSON.parse(tokenURI as string)
-          setNftMetadata(metadata)
-        } catch (err) {
-          console.error('Error parsing NFT metadata:', err)
-        }
-      }
+      }) as string
+      setNftMetadata(tokenURI)
     } catch (err) {
       console.error('Error fetching token URI:', err)
     }
@@ -73,6 +67,8 @@ export function ClaimReward({ round, winningNumber, signature, onClaimStateChang
       const receipt = await publicClient.waitForTransactionReceipt({ hash: txHash })
 
       if (receipt.status === 'success') {
+        console.log("succeeded");
+
         // Get tokenId from events
         const tokenId = receipt.logs[0]?.topics[3]
         if (tokenId) {
@@ -103,17 +99,14 @@ export function ClaimReward({ round, winningNumber, signature, onClaimStateChang
         {nftMetadata && (
           <div className="space-y-3">
             <div className="w-full max-w-md mx-auto rounded-lg overflow-hidden border border-gray-200">
-              <div
-                className="w-full"
-                dangerouslySetInnerHTML={{ 
-                  __html: atob(nftMetadata.image.replace('data:image/svg+xml;base64,', ''))
-                }}
-              />
+              <img src={
+                nftMetadata.startsWith('ipfs://')
+                  ? `${IPFS_GATEWAY_BASE_URL}${nftMetadata.slice(7)}`
+                  : nftMetadata
+              }/>
             </div>
             
             <div className="text-center">
-              <p className="text-sm text-gray-600 mb-2">{nftMetadata.name}</p>
-              <p className="text-sm text-gray-600 mb-2">{nftMetadata.description}</p>
               <a
                 href={`https://explorer-testnet.ata.network/token/${NFT_CONTRACT_ADDRESS}/instance/${tokenIdDecimalString}`}
                 target="_blank"
