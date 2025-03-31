@@ -32,6 +32,8 @@ export function ClaimReward({ round, winningNumber, signature, onClaimStateChang
     if (!id || !publicClient) return
     
     try {
+      console.log("fetching token metadata...")
+      
       const tokenURI = await publicClient.readContract({
         address: NFT_CONTRACT_ADDRESS,
         abi: guessNFTAbi,
@@ -99,7 +101,7 @@ export function ClaimReward({ round, winningNumber, signature, onClaimStateChang
         {nftMetadata && (
           <div className="space-y-3">
             <div className="w-full max-w-md mx-auto rounded-lg overflow-hidden border border-gray-200">
-              <img src={
+              <img className="w-[50%] mx-auto object-contain" src={
                 nftMetadata.startsWith('ipfs://')
                   ? `${IPFS_GATEWAY_BASE_URL}${nftMetadata.slice(7)}`
                   : nftMetadata
